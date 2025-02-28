@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+<<<<<<< Updated upstream
     "@radix-ui/react-avatar": "^1.1.3",
     "@radix-ui/react-collapsible": "^1.1.3",
     "@radix-ui/react-dialog": "^1.1.6",
@@ -31,6 +32,19 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@types/next-auth": "^3.13.0",
+=======
+    "@pdf-lib/fontkit": "^1.1.1",
+    "canvas": "^3.1.0",
+    "fontkit": "^2.0.4",
+    "fs": "^0.0.1-security",
+    "next": "15.1.7",
+    "pdf-lib": "^1.17.1",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3",
+>>>>>>> Stashed changes
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
