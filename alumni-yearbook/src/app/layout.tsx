@@ -1,6 +1,7 @@
 import { AuthProvider } from './providers';
 import type { Metadata } from 'next';
 import { ReactNode } from 'react';
+import './globals.css';
 
 export const metadata: Metadata = {
   title: 'Your App Name',
