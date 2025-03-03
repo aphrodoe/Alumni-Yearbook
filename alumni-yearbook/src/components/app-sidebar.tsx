@@ -47,14 +47,14 @@ const data = {
       isActive: true,
       items: [
         {
-          title: "Yearbook preferences",
+          title: "Yearbook",
           url: "#",
         },
         {
           title: "Personal information",
           url: "#",
-        },
-      ],
+        }
+      ]
     },
     {
       title: "Message",
@@ -67,18 +67,18 @@ const data = {
         },
         {
           title: "Juniors",
-          url: "#",
+          url: "/message_junior",
         },
       ],
     },
     {
-      title: "Upload",
+      title: "New Yearbook Section",
       url: "#",
       icon: ArrowUpFromLine,
       items: [
         {
           title: "Photos",
-          url: "#",
+          url: "/photos",
         },
         {
           title: "Text",
@@ -96,7 +96,11 @@ const data = {
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
-    <Sidebar collapsible="icon" {...props}>
+    <Sidebar 
+      collapsible="icon" 
+      className="bg-white" 
+      {...props}
+    >
       <SidebarHeader>
       </SidebarHeader>
       <SidebarContent>
