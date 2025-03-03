@@ -3,12 +3,29 @@ import fontkit from "@pdf-lib/fontkit";
 import { createCanvas, loadImage } from "canvas";
 import fs from "fs";
 
-async function addImage(inputFile: string, outputFile: string, imageFile: string, x_cord: number, y_cord:number, imgWidth: number,imgHeight: number ) {
+export async function createDoc(templateFile: string, outputFile: string, pages: number) {
+    const templatePdfBytes = fs.readFileSync(templateFile);
+    const templatePdf = await PDFDocument.load(templatePdfBytes);
+
+    const newPdf = await PDFDocument.create();
+
+    for (let i = 0; i < pages; i++) {
+        const [copiedPage] = await newPdf.copyPages(templatePdf, [0]); 
+        newPdf.addPage(copiedPage);
+    }
+
+    const newPdfBytes = await newPdf.save();
+    fs.writeFileSync(outputFile, newPdfBytes);
+
+    console.log(`created a new PDF with ${pages} repeated pages.`);
+}
+
+export async function addImage(inputFile: string, outputFile: string, imageFile: string, x_cord: number, y_cord:number, imgWidth: number,imgHeight: number ,pageNo: number) {
 
     const existingPdfBytes = fs.readFileSync(inputFile);
     const pdfDoc = await PDFDocument.load(existingPdfBytes);
 
-    const page = pdfDoc.getPage(0);
+    const page = pdfDoc.getPage(pageNo-1);
     const { width, height } = page.getSize();
 
     
@@ -48,13 +65,13 @@ async function addImage(inputFile: string, outputFile: string, imageFile: string
     console.log(`Image added to ${inputFile}. Saved as ${outputFile}.`);
 }
 
-async function addParagraph(inputFile: string,outputFile: string,paragraph: string,x: number,y: number,boxWidth: number,boxHeight: number,fontSize: number) {
+export async function addParagraph(inputFile: string,outputFile: string,paragraph: string,x: number,y: number,boxWidth: number,boxHeight: number,fontSize: number,pageNo: number) {
     
     const existingPdfBytes = fs.readFileSync(inputFile);
     const pdfDoc = await PDFDocument.load(existingPdfBytes);
 
     
-    const page = pdfDoc.getPage(0);
+    const page = pdfDoc.getPage(pageNo-1);
 
     pdfDoc.registerFontkit(fontkit);
     const fontBytes = fs.readFileSync("../assets/Airstream.ttf");
@@ -121,11 +138,11 @@ async function addParagraph(inputFile: string,outputFile: string,paragraph: stri
 
 async function main(){
     const para="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse tellus tortor, sodales nec risus at, porta pretium eros. Sed sodales egestas quam. Morbi ultrices quam neque, eu efficitur nisl ullamcorper vitae. Ut ultricies sollicitudin est et mollis. Nullam sit amet feugiat massa. Curabitur euismod lectus et mi dignissim maximus. Ut sed bibendum lectus, et molestie lectus. Proin commodo ullamcorper lectus non porta. Nulla purus est, facilisis eget sollicitudin at, luctus eu massa. Sed mi erat, pellentesque quis molestie quis, congue viverra diam. Mauris et iaculis erat. Pellentesque sit amet blandit mi, ac placerat est. Donec quis lorem auctor, euismod ex."
-    await addParagraph("updated.pdf","updated.pdf",para,500,450, 300,300,15);
-    await addImage("updated.pdf","updated.pdf","../assets/people.jpg",50,450,400,300);
+    await addParagraph("updated.pdf","updated.pdf",para,500,450, 300,300,15,1);
+    await addImage("updated.pdf","updated.pdf","../assets/people.jpg",50,450,400,300,1);
 
-    await addParagraph("updated.pdf","updated.pdf",para,50,100,300,300,15);
-    await addImage("updated.pdf","updated.pdf","../assets/party.jpg",400,100,400,300);
+    await addParagraph("updated.pdf","updated.pdf",para,50,100,300,300,15,1);
+    await addImage("updated.pdf","updated.pdf","../assets/party.jpg",400,100,400,300,1);
 }
 
-main();
+//main();
