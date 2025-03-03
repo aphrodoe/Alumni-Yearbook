@@ -2,7 +2,7 @@ import { PDFDocument, rgb } from "pdf-lib";
 import fs from "fs";
 import fontkit from "@pdf-lib/fontkit";
 
-async function addSectionHeading(inputFile: string, outputFile: string, heading: string,fontSize: number, margin: number) {
+export async function addSectionHeading(inputFile: string, outputFile: string, heading: string,fontSize: number, margin: number) {
     const existingPdfBytes = fs.readFileSync(inputFile);
     const pdfDoc = await PDFDocument.load(existingPdfBytes);
 
@@ -46,6 +46,6 @@ async function addSectionHeading(inputFile: string, outputFile: string, heading:
 
     console.log(`Added section heading "${heading}" on the first page.`);
 }
-const fontSize=80;
-const margin=5;
-addSectionHeading("../assets/base_bg.pdf", "updated.pdf", "Section 1: Introduction",fontSize,margin);
+//const fontSize=80;
+//const margin=5;
+//addSectionHeading("../assets/base_bg.pdf", "updated.pdf", "Section 1: Introduction",fontSize,margin);
