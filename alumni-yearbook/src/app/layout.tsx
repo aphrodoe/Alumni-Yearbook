@@ -4,7 +4,7 @@ import { ReactNode } from 'react';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Your App Name',
+  title: 'Yearbook',
   description: 'Your app description',
 };
 

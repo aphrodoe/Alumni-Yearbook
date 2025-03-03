@@ -67,3 +67,16 @@
   }
 }
 
+.fixed.inset-0[role="dialog"] {
+  background-color: rgba(0, 0, 0, 0.4);
+}
+
+[data-sidebar="sidebar"][data-mobile="true"] {
+  background-color: white !important;
+  z-index: 50 !important;
+  box-shadow: -10px 0 30px rgba(0, 0, 0, 0.15) !important;
+}
+
+[data-sidebar="sidebar"] {
+  background-color: white !important;
+}
