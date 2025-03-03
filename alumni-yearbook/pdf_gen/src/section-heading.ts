@@ -46,6 +46,7 @@ export async function addSectionHeading(inputFile: string, outputFile: string, h
 
     console.log(`Added section heading "${heading}" on the first page.`);
 }
-//const fontSize=80;
-//const margin=5;
-//addSectionHeading("../assets/base_bg.pdf", "updated.pdf", "Section 1: Introduction",fontSize,margin);
+/*const fontSize=60;
+const margin=5;
+addSectionHeading("../assets/base_bg.pdf", "updated.pdf", "Section 1: Introduction",fontSize,margin);
+*/
