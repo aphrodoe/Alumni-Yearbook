@@ -41,6 +41,7 @@
     "next-themes": "^0.4.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
     "react-icons": "^5.5.0",
@@ -50,6 +51,8 @@
 =======
     "react-pdf": "^9.2.1",
 >>>>>>> Stashed changes
+=======
+>>>>>>> 8f5661b522d92aa6e285f84536344b1f451f4342
     "sonner": "^2.0.1",
     "tailwind-merge": "^3.0.2",
     "tailwindcss-animate": "^1.0.7"

@@ -1,6 +1,7 @@
-"use client";
+'use client';
 
 import { signIn, useSession } from "next-auth/react";
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
@@ -15,21 +16,19 @@ import PDFViewer from "../components/PDFViewer"; // Minimal addition
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+import { redirect } from "next/navigation";
+import { Button } from "../components/ui/button";
+>>>>>>> 8f5661b522d92aa6e285f84536344b1f451f4342
 
-export default function HomePage() {
+export default function Home() {
   const { data: session, status } = useSession();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (status === "authenticated") {
-      router.push("/dashboard");
-    }
-  }, [status, router]);
 
   if (status === "loading") {
     return <div>Loading...</div>;
   }
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
   return (
     <div
@@ -68,5 +67,16 @@ export default function HomePage() {
       </div>
     </main>
 >>>>>>> Stashed changes
+=======
+  if (session) {
+    return (
+      redirect("/dashboard")
+    )
+  }
+  return (
+    <main className="flex min-h-screen flex-col items-center justify-center p-24">
+      <Button onClick={() => signIn("google")}>Sign In with Google</Button>
+    </main>
+>>>>>>> 8f5661b522d92aa6e285f84536344b1f451f4342
   );
 }
