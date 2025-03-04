@@ -1,17 +1,8 @@
 import NextAuth from "next-auth";
+import type { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
-import { NextAuthOptions, Session } from "next-auth";
-
-declare module "next-auth" {
-  interface Session {
-    user: {
-      id: string;
-      name?: string | null;
-      email?: string | null;
-      image?: string | null;
-    };
-  }
-}
+import dbConnect from "../../../../lib/mongodb";
+import User from "../../../models/User";
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -20,18 +11,44 @@ export const authOptions: NextAuthOptions = {
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
   ],
-  pages: {
-    signIn: "/", // Redirect sign-in page to homepage
-  },
+  secret: process.env.NEXTAUTH_SECRET,
   callbacks: {
+    async signIn({ user, account, profile }) {
+      const email = user.email || "";
+      const isAllowedEmail = email.startsWith("b24");
+      
+      if (isAllowedEmail) {
+        await dbConnect();
+        
+        try {
+          const existingUser = await User.findOne({ email: user.email });
+          
+          if (!existingUser) {
+            await User.create({
+              email: user.email,
+              name: user.name,
+            });
+          }
+        } catch (error) {
+          console.error("Error saving user to MongoDB:", error);
+
+        }
+      }
+      
+      return isAllowedEmail;
+    },
     async session({ session, token }) {
       if (session.user) {
-        session.user.id = token.sub!;
+        (session.user as any).id = token.sub;
       }
       return session;
     },
   },
+  pages: {
+    error: "/auth/error",
+  },
 };
 
 const handler = NextAuth(authOptions);
+
 export { handler as GET, handler as POST };
