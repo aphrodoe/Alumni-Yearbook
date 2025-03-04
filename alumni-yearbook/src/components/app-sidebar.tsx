@@ -63,7 +63,7 @@ const data = {
       items: [
         {
           title: "Batchmates",
-          url: "#",
+          url: "/message_batchmate",
         },
         {
           title: "Juniors",

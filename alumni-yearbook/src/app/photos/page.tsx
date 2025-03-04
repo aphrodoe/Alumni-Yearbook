@@ -22,13 +22,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useEffect } from "react";
 
 export default function PhotosDashboard() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const { toast } = useToast();
   interface Image {
     _id: string;
     cloudinaryUrl: string;
@@ -62,17 +61,13 @@ export default function PhotosDashboard() {
       if (response.ok) {
         setImages(data.images || []);
       } else {
-        toast({
-          title: "Error",
+        toast("Error",{
           description: data.message || "Failed to load images",
-          variant: "destructive",
         });
       }
     } catch (error) {
-      toast({
-        title: "Error",
+      toast( "Error", {
         description: "Failed to fetch images",
-        variant: "destructive",
       });
     } finally {
       setIsLoading(false);
@@ -99,10 +94,8 @@ export default function PhotosDashboard() {
     e.preventDefault();
     
     if (!image || !caption) {
-      toast({
-        title: "Missing Information",
+      toast( "Missing Information", {
         description: "Please select an image and add a caption",
-        variant: "destructive",
       });
       return;
     }
@@ -130,8 +123,7 @@ export default function PhotosDashboard() {
         const data = await response.json();
         
         if (response.ok) {
-          toast({
-            title: "Success",
+          toast( "Success",{
             description: "Image uploaded successfully!",
           });
           setImage(null);
@@ -140,18 +132,14 @@ export default function PhotosDashboard() {
           
           fetchImages();
         } else {
-          toast({
-            title: "Upload Failed",
+          toast("Upload Failed",{
             description: data.message || "Failed to upload image",
-            variant: "destructive",
           });
         }
       };
     } catch (error) {
-      toast({
-        title: "Error",
+      toast( "Error",{
         description: (error instanceof Error ? error.message : "An unexpected error occurred"),
-        variant: "destructive",
       });
     } finally {
       setIsUploading(false);

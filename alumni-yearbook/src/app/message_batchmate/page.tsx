@@ -23,9 +23,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import emailjs from 'emailjs-com';
 
-export default function MessageJunior() {
+
+export default function MessageBatchmate() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [message, setMessage] = useState('');
@@ -43,7 +43,7 @@ export default function MessageJunior() {
     setIsSubmitting(true);
     
     try {
-        const response = await fetch('/api/messagej', {
+        const response = await fetch('/api/messageb', {
           method: 'POST',
           headers: {
               'Content-Type': 'application/json',
@@ -54,18 +54,6 @@ export default function MessageJunior() {
     
         if (response.ok) {
             const data = await response.json();
-
-            
-            await emailjs.send(
-                process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID!,
-                process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID!,
-                {
-                    from_name: session?.user?.name || "A Senior",
-                    message: message,
-                    to_email: email
-                },
-                process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY!
-            );
             
             toast.success("Message sent successfully", { 
                 description: "Your message has been sent to the junior" 
@@ -119,7 +107,7 @@ export default function MessageJunior() {
                 </BreadcrumbItem>
                 <BreadcrumbSeparator className="hidden md:block" />
                 <BreadcrumbItem>
-                  <BreadcrumbPage>Juniors</BreadcrumbPage>
+                  <BreadcrumbPage>Batchmates</BreadcrumbPage>
                 </BreadcrumbItem>
               </BreadcrumbList>
             </Breadcrumb>
@@ -128,14 +116,14 @@ export default function MessageJunior() {
         <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
             <Card>
                 <CardHeader>
-                    <CardTitle>Message Juniors</CardTitle>
+                    <CardTitle>Message Batchmates</CardTitle>
                 </CardHeader>
                 <CardContent>
                 <form onSubmit={handleSubmit} className="space-y-4">
-                <p className="text-sm text-gray-500 mb-2">This message will be visible to your junior when they get access to this portal, that is, their graduation year! It will also appear in their yearbook.</p>
+                <p className="text-sm text-gray-500 mb-2">Sent a message to your batchmate! This message will be visible in their yearbook upon approval.</p>
                 <div className="space-y-2">
                     
-                  <label htmlFor="email" className="text-sm font-medium">Junior Email</label>
+                  <label htmlFor="email" className="text-sm font-medium">Batchmate Email</label>
                     <Input
                     id="email" 
                     type="email" 
