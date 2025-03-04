@@ -20,7 +20,7 @@ export async function createDoc(templateFile: string, outputFile: string, pages:
     console.log(`created a new PDF with ${pages} repeated pages.`);
 }
 
-export async function addImage(inputFile: string, outputFile: string, imageFile: string, x_cord: number, y_cord:number, imgWidth: number,imgHeight: number ,pageNo: number) {
+export async function addImage(inputFile: string, outputFile: string, imageFile: string, x_cord: number, y_cord:number, secWidth:number, secHeight:number, imgWidth: number,imgHeight: number ,pageNo: number) {
 
     const existingPdfBytes = fs.readFileSync(inputFile);
     const pdfDoc = await PDFDocument.load(existingPdfBytes);
@@ -31,14 +31,25 @@ export async function addImage(inputFile: string, outputFile: string, imageFile:
     
     const imageBytes = fs.readFileSync(imageFile);
     const image = imageFile.endsWith(".png") ? await pdfDoc.embedPng(imageBytes) : await pdfDoc.embedJpg(imageBytes);
+    if(image.width/image.height > imgWidth/imgHeight){
+        const ratio= imgWidth/image.width
+        imgWidth= image.width*ratio;
+        imgHeight= image.height*ratio;
+    }
+    else{
+        const ratio= imgHeight/image.height;
+        imgWidth= image.width*ratio;
+        imgHeight= image.height*ratio;
+    }
 
-    const x = x_cord; 
-    const y = y_cord; 
 
-
-    //Polaroid effect
     const padding=5;
     const bottom=30;
+
+    const x = x_cord+(secWidth-imgWidth-2*padding)/2 + padding; 
+    const y = y_cord+(secHeight-imgHeight-2*padding-bottom)/2 + padding + bottom; 
+
+    //Polaroid effect
     const px=x-padding;
     const py= y-padding-bottom;
     page.drawRectangle({
@@ -65,7 +76,7 @@ export async function addImage(inputFile: string, outputFile: string, imageFile:
     console.log(`Image added to ${inputFile}. Saved as ${outputFile}.`);
 }
 
-export async function addParagraph(inputFile: string,outputFile: string,paragraph: string,x: number,y: number,boxWidth: number,boxHeight: number,fontSize: number,pageNo: number) {
+export async function addParagraph(inputFile: string,outputFile: string,paragraph: string,x: number,y: number,secWidth:number, secHeight:number,boxWidth: number,boxHeight: number,fontSize: number,pageNo: number) {
     
     const existingPdfBytes = fs.readFileSync(inputFile);
     const pdfDoc = await PDFDocument.load(existingPdfBytes);
@@ -80,49 +91,64 @@ export async function addParagraph(inputFile: string,outputFile: string,paragrap
     
     // Split the paragraph into lines that fit inside the box width
     const words = paragraph.split(" ");
-    let lines: string[] = [];
+    let lines= [];
     let currentLine = "";
 
-    for (const word of words) {
-        let testLine = currentLine.length > 0 ? currentLine + " " + word : word;
-        if (font.widthOfTextAtSize(testLine, fontSize) < boxWidth - 20) {
-            currentLine = testLine;
-        } else {
-            lines.push(currentLine);
-            currentLine = word;
+    const minWidth=boxWidth/2;
+    while(lineHeight*lines.length< boxHeight/2 && boxWidth>minWidth){
+        lines.length=0;
+        currentLine=="";
+        for (const word of words) {
+            let testLine = currentLine.length > 0 ? currentLine + " " + word : word;
+            if (font.widthOfTextAtSize(testLine, fontSize) < boxWidth - 20) {
+                currentLine = testLine;
+            } else {
+                lines.push(currentLine);
+                currentLine = word;
+            }
         }
+        if (currentLine.length > 0) {
+            lines.push(currentLine);
+        }
+        boxWidth*=0.95;
+        boxHeight*=0.95;
     }
-    if (currentLine.length > 0) {
-        lines.push(currentLine);
-    }
-
+    boxHeight*=1.05;
+    boxWidth*=1.05;
     const totalTextHeight = lines.length * lineHeight;
+    
     if (totalTextHeight > boxHeight - 20) {
         console.log("Warning: Text is too large to fit inside the box.");
     }
 
-    // Draw the box around the text
-    /*page.drawRectangle({
-        x,
-        y,
+    x=x+(secWidth-boxWidth)/2;
+    y=y+(secHeight-boxWidth)/2;
+
+    page.drawRectangle({
+        x:x,
+        y:y,
+        color:rgb(0.99,0.81,0.13),
         width: boxWidth,
         height: boxHeight,
-        borderWidth: 2,
-        borderColor: rgb(0, 0, 0), 
-        color: rgb(1, 1, 1), 
-    });*/
+    })
 
-    //post it effect
-    const imageBytes = fs.readFileSync('../assets/post-it.png');
-    const image = await pdfDoc.embedPng(imageBytes);
+    page.drawCircle({
+        x:x,
+        y:y+boxHeight,
+        size:10,
+        color: rgb(1, 0, 0),
+        borderColor: rgb(0.5, 0.5, 0.5),
+        borderWidth: 1,
+    })
 
-    page.drawImage(image, {
-        x,
-        y,
-        width: boxWidth*1.05,
-        height: boxHeight,
-    });
-
+    page.drawCircle({
+        x:x+boxWidth,
+        y:y,
+        size:10,
+        color: rgb(1, 0, 0),
+        borderColor: rgb(0.5, 0.5, 0.5),
+        borderWidth: 1,
+    })
 
     let textY = y + boxHeight - 15; // Start from the top of the box
     for (const line of lines) {
@@ -133,9 +159,10 @@ export async function addParagraph(inputFile: string,outputFile: string,paragrap
     const modifiedPdfBytes = await pdfDoc.save();
     fs.writeFileSync(outputFile, modifiedPdfBytes);
 
-    console.log(`Added paragraph inside a box at (${x}, ${y}) on the first page.`);
+    console.log(`Added paragraph inside a box.`);
 }
 
+/*
 async function main(){
     const para="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse tellus tortor, sodales nec risus at, porta pretium eros. Sed sodales egestas quam. Morbi ultrices quam neque, eu efficitur nisl ullamcorper vitae. Ut ultricies sollicitudin est et mollis. Nullam sit amet feugiat massa. Curabitur euismod lectus et mi dignissim maximus. Ut sed bibendum lectus, et molestie lectus. Proin commodo ullamcorper lectus non porta. Nulla purus est, facilisis eget sollicitudin at, luctus eu massa. Sed mi erat, pellentesque quis molestie quis, congue viverra diam. Mauris et iaculis erat. Pellentesque sit amet blandit mi, ac placerat est. Donec quis lorem auctor, euismod ex."
     await addParagraph("updated.pdf","updated.pdf",para,500,450, 300,300,15,1);
@@ -144,5 +171,5 @@ async function main(){
     await addParagraph("updated.pdf","updated.pdf",para,50,100,300,300,15,1);
     await addImage("updated.pdf","updated.pdf","../assets/party.jpg",400,100,400,300,1);
 }
-
-//main();
+main()
+*/
