@@ -1,11 +1,20 @@
 "use client";
 
 import { signIn, useSession } from "next-auth/react";
+<<<<<<< Updated upstream
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FcGoogle } from "react-icons/fc";
+=======
+import { redirect } from "next/navigation";
+import { Button } from "../components/ui/button";
+import PDFViewer from "../components/PDFViewer"; // Minimal addition
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 
 export default function HomePage() {
   const { data: session, status } = useSession();
@@ -21,6 +30,7 @@ export default function HomePage() {
     return <div>Loading...</div>;
   }
 
+<<<<<<< Updated upstream
   return (
     <div
       className="flex min-h-screen flex-col items-center justify-center gap-6 bg-muted p-6 md:p-10"
@@ -43,5 +53,20 @@ export default function HomePage() {
         </CardContent>
       </Card>
     </div>
+=======
+  if (session) {
+    return redirect("/dashboard");
+  }
+
+  return (
+    <main className="flex min-h-screen flex-col items-center justify-center p-24">
+      <Button onClick={() => signIn("google")}>Sign In with Google</Button>
+
+      {/* PDF Viewer Added Below */}
+      <div className="mt-10 w-full max-w-4xl">
+        <PDFViewer />
+      </div>
+    </main>
+>>>>>>> Stashed changes
   );
 }
