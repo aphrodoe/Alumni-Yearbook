@@ -23,6 +23,21 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
+import PDFPage from "../pdf/page";
+
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+
+
+type User = {
+  email: string;
+  name: string;
+};
 
 interface ImageType {
   _id: string;
@@ -35,6 +50,8 @@ export default function PhotosDashboard() {
   const { data: session, status } = useSession();
   const router = useRouter();
 
+  const [users, setUsers] = useState<User[]>([]);
+  const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const [description, setDescription] = useState('');
@@ -51,6 +68,27 @@ export default function PhotosDashboard() {
       fetchImages();
     }
   }, [status, router]);
+
+  useEffect(() => {
+      const fetchUsers = async () => {
+        try {
+          const response = await fetch('/api/users');
+          if (response.ok) {
+            const data = await response.json();
+            const filteredData = data.filter((user: User) => user.email !== session?.user?.email);
+            setUsers(filteredData);
+            setFilteredUsers(filteredData);
+          }
+        } catch (error) {
+          console.error('Error fetching users:', error);
+          toast.error('Failed to fetch users');
+        }
+      };
+  
+      if (session) {
+        fetchUsers();
+      }
+    }, [session]);
 
   const fetchImages = async () => {
     setIsLoading(true);
@@ -127,7 +165,7 @@ export default function PhotosDashboard() {
   if (status === "loading") return <div>Loading...</div>;
   if (!session) return null;
 
-  return (
+  return (<div>
     <SidebarProvider>
       <AppSidebar />
       <SidebarInset>
@@ -150,7 +188,6 @@ export default function PhotosDashboard() {
               <Input value={description} onChange={e => setDescription(e.target.value)} placeholder="Add a title..." />
                 <Input type="file" accept="image/*" multiple onChange={handleImageChange} />
                 <Textarea value={caption} onChange={e => setCaption(e.target.value)} placeholder="Add a caption..." />
-                
                 {previewUrls.length > 0 && (
                   <div className="grid grid-cols-3 gap-2">
                     {previewUrls.map((url, index) => (
@@ -185,5 +222,8 @@ export default function PhotosDashboard() {
         </div>
       </SidebarInset>
     </SidebarProvider>
+    </div>
   );
+
+  
 }
