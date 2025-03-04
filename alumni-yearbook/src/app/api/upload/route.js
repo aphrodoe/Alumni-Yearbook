@@ -18,38 +18,43 @@ export async function POST(request) {
   }
 
   try {
-    const { image, caption } = await request.json();
+    const { images, caption, description } = await request.json();
     
-    if (!image || !caption) {
+    if (!images || !Array.isArray(images) || images.length === 0) {
       return NextResponse.json(
-        { message: 'Image and caption are required' }, 
+        { message: 'At least one image is required' }, 
         { status: 400 }
       );
     }
 
-    const uploadResponse = await cloudinary.uploader.upload(image, {
-      upload_preset: ''
-    });
-    
     await connectToDatabase();
-    
-    const newImage = new Image({
-      email: session.user.email,
-      cloudinaryId: uploadResponse.public_id,
-      cloudinaryUrl: uploadResponse.secure_url,
-      caption: caption
-    });
-    
-    await newImage.save();
-    
+
+    // Upload all images to Cloudinary
+    const uploadedImages = await Promise.all(
+      images.map(async (image) => {
+        const uploadResponse = await cloudinary.uploader.upload(image, {
+          upload_preset: process.env.CLOUDINARY_UPLOAD_PRESET || ''
+        });
+
+        return new Image({
+          email: session.user.email,
+          cloudinaryId: uploadResponse.public_id,
+          cloudinaryUrl: uploadResponse.secure_url,
+          caption: caption,
+          headtitle: description,
+        }).save();
+      })
+    );
+
     return NextResponse.json({ 
       message: 'Upload successful',
-      image: newImage
+      images: uploadedImages
     });
+
   } catch (error) {
-    console.error('Error uploading image:', error);
+    console.error('Error uploading images:', error);
     return NextResponse.json(
-      { message: 'Error uploading image', error: error.message }, 
+      { message: 'Error uploading images', error: error.message }, 
       { status: 500 }
     );
   }
