@@ -58,7 +58,7 @@ export default function ContactUs() {
                 {
                     from_name: session?.user?.name || "A User",
                     message: message,
-                    to_email: userEmail
+                    to_email: "anshmcs@gmail.com"
                 },
                 process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY!
             );
