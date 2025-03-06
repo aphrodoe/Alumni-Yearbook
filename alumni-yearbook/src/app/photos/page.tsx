@@ -202,23 +202,6 @@ export default function PhotosDashboard() {
               </form>
             </CardContent>
           </Card>
-
-          <h2 className="text-xl font-semibold mt-4">Yearbook Photos</h2>
-
-          {isLoading ? (
-            <div className="p-8 text-center">Loading images...</div>
-          ) : images.length > 0 ? (
-            <div className="grid gap-4 md:grid-cols-3">
-              {images.map(image => (
-                <div key={String(image._id)} className="overflow-hidden rounded-xl">
-                  <img src={image.cloudinaryUrl} alt={image.caption || "Uploaded Image"} className="w-full h-48 object-cover" />
-                  <div className="p-2 text-sm"><p>{image.caption || "No caption provided"}</p></div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center p-8">No photos uploaded yet.</div>
-          )}
         </div>
       </SidebarInset>
     </SidebarProvider>

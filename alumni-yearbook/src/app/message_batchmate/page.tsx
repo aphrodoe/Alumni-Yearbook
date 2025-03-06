@@ -86,7 +86,7 @@ export default function MessageBatchmate() {
   useEffect(() => {
     const fetchMessagesAndCheckStatus = async () => {
       if (!selectedUser || !session) return;
-
+    
       try {
         const response = await fetch('/api/messages/check', {
           method: 'POST',
@@ -98,7 +98,7 @@ export default function MessageBatchmate() {
             receiver: selectedUser.email
           })
         });
-
+    
         if (response.ok) {
           const data = await response.json();
           setMessages(data.messages);
@@ -125,52 +125,54 @@ export default function MessageBatchmate() {
     setFilteredUsers(filtered);
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    
-    if (!message || !selectedUser || !session?.user?.email) {
-      toast.error("Please select a user and type a message");
-      return;
-    }
-    
-    if (!canMessage) {
-      toast.error("You can only send one message to this user");
-      return;
-    }
-    
-    setIsSubmitting(true);
-    
-    try {
-      const response = await fetch('/api/messageb', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ 
-          email_sender: session.user.email,
-          email_receiver: selectedUser.email, 
-          message 
-        }),
-      });
-    
-      if (response.ok) {
-        const newMessage = await response.json();
-        
-        setMessages([newMessage]);
-        setCanMessage(false);
-        
-        toast.success("Message sent successfully");
-        setMessage('');
-      } else {
-        toast.error("Failed to send message");
-      }
-    } catch (error) {
-      console.error("Error sending message:", error);
+
+const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  e.preventDefault();
+  
+  if (!message || !selectedUser || !session?.user?.email) {
+    toast.error("Please select a user and type a message");
+    return;
+  }
+  
+  if (!canMessage) {
+    toast.error("You can only send one message to this user");
+    return;
+  }
+  
+  setIsSubmitting(true);
+  
+  try {
+    const response = await fetch('/api/messageb', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ 
+        email_sender: session.user.email,
+        email_receiver: selectedUser.email, 
+        message 
+      }),
+    });
+  
+    if (response.ok) {
+      const newMessage = await response.json();
+      
+      setMessages(prevMessages => [...prevMessages, newMessage]);
+
+      setCanMessage(false);
+      
+      toast.success("Message sent successfully");
+      setMessage('');
+    } else {
       toast.error("Failed to send message");
-    } finally {
-      setIsSubmitting(false);
     }
-  };
+  } catch (error) {
+    console.error("Error sending message:", error);
+    toast.error("Failed to send message");
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   const handleUserSelect = (user: User) => {
     setSelectedUser(user);

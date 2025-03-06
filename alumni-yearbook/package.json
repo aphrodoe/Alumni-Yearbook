@@ -31,12 +31,9 @@
     "cloudinary": "^2.5.1",
     "clsx": "^2.1.1",
     "emailjs-com": "^3.2.0",
-<<<<<<< HEAD
     "fontkit": "^2.0.4",
     "fs": "^0.0.1-security",
-=======
     "embla-carousel-react": "^8.5.2",
->>>>>>> bc491838abe52c170df2277a4602d2efa83e2c13
     "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.476.0",
     "mongodb": "^6.14.1",
