@@ -23,6 +23,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
+import { Toaster } from "@/components/ui/sonner";
 import PDFPage from "../pdf/page";
 
 import {
@@ -166,6 +167,7 @@ export default function PhotosDashboard() {
   if (!session) return null;
 
   return (<div>
+    <Toaster />
     <SidebarProvider>
       <AppSidebar />
       <SidebarInset>
@@ -203,8 +205,10 @@ export default function PhotosDashboard() {
             </CardContent>
           </Card>
         </div>
+        
       </SidebarInset>
     </SidebarProvider>
+    
     </div>
   );
 
