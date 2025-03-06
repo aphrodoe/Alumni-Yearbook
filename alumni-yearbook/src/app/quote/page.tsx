@@ -17,7 +17,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { useEffect, ReactNode, useState } from "react";
+import { useEffect, ReactNode, useState, use } from "react";
 import { CardContent, Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -32,6 +32,7 @@ export default function Dashboard() {
   const email= session?.user?.email;
 
   const [quote, setQuote] = useState('');
+  const [fetchedQuote, setFetchedQuote] = useState('');
 
   const handleSubmit= async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -66,6 +67,32 @@ export default function Dashboard() {
       router.push("/api/auth/error");
     }
   }, [status, router]);
+
+  useEffect(() => {
+    if (!email) return;
+  
+    const fetchQuote = async () => {
+      try {
+        const response = await fetch(`/api/quote/get?email=${encodeURIComponent(email)}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+  
+        if (!response.ok) {
+          throw new Error(`Error: ${response.status} - ${response.statusText}`);
+        }
+  
+        const data = await response.json();
+        setFetchedQuote(data.quote);
+      } catch (error) {
+        console.error('Error fetching quote:', error);
+      }
+    };
+  
+    fetchQuote();
+  }, [email]);
 
   if (status === "loading") {
     return <div>Loading...</div>;
@@ -129,6 +156,20 @@ export default function Dashboard() {
                 </form> 
                 </CardContent>
             </Card>
+
+
+            <Card>
+                <CardHeader>
+                    <CardTitle>Your current quote</CardTitle>
+                </CardHeader>
+                {fetchedQuote && <CardContent>
+                    <p className="text-sm text-gray-500 mb-2">{fetchedQuote}</p>
+                </CardContent>}
+                {!fetchedQuote && <CardContent>
+                    <p className="text-sm text-gray-500 mb-2">You have not added a yearbook quote yet</p>
+                </CardContent>}
+            </Card>
+
         </div>
 
       </SidebarInset>
