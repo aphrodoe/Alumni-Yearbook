@@ -87,10 +87,17 @@ const data = {
       ],
     },
     {
-      title: "Notifications",
+      title: "Contact Us",
       url: "#",
       icon: Bell,
+      items: [
+        {
+          title: "Reach us",
+          url: "/contact_us",
+        },
+      ]
     },
+    
   ],
 }
 
@@ -98,7 +105,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar 
       collapsible="icon" 
-      className="bg-white" 
+      className="bg-background"
       {...props}
     >
       <SidebarHeader>

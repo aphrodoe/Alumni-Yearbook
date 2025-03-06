@@ -54,7 +54,7 @@ export default function ContactUs() {
         if (response.ok) {
             await emailjs.send(
                 process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID!,
-                process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID!,
+                process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID_SUPPORT!,
                 {
                     from_name: session?.user?.name || "A User",
                     message: message,
