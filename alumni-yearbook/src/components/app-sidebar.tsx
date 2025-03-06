@@ -87,9 +87,14 @@ const data = {
       ],
     },
     {
-      title: "Notifications",
+      title: "Contact Us",
       url: "#",
       icon: Bell,
+      items: [
+        {
+          title: "Contact Us",
+          url: "/contact_us",
+        },]
     },
   ],
 }
