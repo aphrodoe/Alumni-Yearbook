@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@pdf-lib/fontkit": "^1.1.1",
     "@radix-ui/react-avatar": "^1.1.3",
     "@radix-ui/react-collapsible": "^1.1.3",
     "@radix-ui/react-dialog": "^1.1.6",
@@ -25,18 +26,26 @@
     "@radix-ui/react-slot": "^1.1.2",
     "@radix-ui/react-toast": "^1.2.6",
     "@radix-ui/react-tooltip": "^1.1.8",
+    "canvas": "^3.1.0",
     "class-variance-authority": "^0.7.1",
     "cloudinary": "^2.5.1",
     "clsx": "^2.1.1",
     "emailjs-com": "^3.2.0",
+<<<<<<< HEAD
+    "fontkit": "^2.0.4",
+    "fs": "^0.0.1-security",
+=======
     "embla-carousel-react": "^8.5.2",
+>>>>>>> bc491838abe52c170df2277a4602d2efa83e2c13
     "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.476.0",
+    "mongodb": "^6.14.1",
     "mongoose": "^8.11.0",
     "next": "15.1.7",
     "next-auth": "^4.24.11",
     "next-cloudinary": "^6.16.0",
     "next-themes": "^0.4.4",
+    "pdf-lib": "^1.17.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
 
@@ -51,6 +60,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@types/mongodb": "^4.0.6",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

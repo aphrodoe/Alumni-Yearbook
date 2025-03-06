@@ -1,7 +1,9 @@
-import { PDFDocument, rgb } from "pdf-lib";
+import { degrees, PDFDocument, rgb } from "pdf-lib";
 import fontkit from "@pdf-lib/fontkit";
 import { createCanvas, loadImage } from "canvas";
 import fs from "fs";
+import { randomInt } from "crypto";
+import { off } from "process";
 
 export async function createDoc(templateFile: string, outputFile: string, pages: number) {
     const templatePdfBytes = fs.readFileSync(templateFile);
@@ -85,7 +87,7 @@ export async function addParagraph(inputFile: string,outputFile: string,paragrap
     const page = pdfDoc.getPage(pageNo-1);
 
     pdfDoc.registerFontkit(fontkit);
-    const fontBytes = fs.readFileSync("../assets/Airstream.ttf");
+    const fontBytes = fs.readFileSync("../assets/Angelos.ttf");
     const font = await pdfDoc.embedFont(fontBytes);
     const lineHeight = fontSize * 1.5;
     
@@ -93,11 +95,10 @@ export async function addParagraph(inputFile: string,outputFile: string,paragrap
     const words = paragraph.split(" ");
     let lines= [];
     let currentLine = "";
-
     const minWidth=boxWidth/2;
-    while(lineHeight*lines.length< boxHeight/2 && boxWidth>minWidth){
+    while(lineHeight*lines.length< boxHeight/2 && boxWidth>minWidth ){
         lines.length=0;
-        currentLine=="";
+        currentLine="";
         for (const word of words) {
             let testLine = currentLine.length > 0 ? currentLine + " " + word : word;
             if (font.widthOfTextAtSize(testLine, fontSize) < boxWidth - 20) {
@@ -116,15 +117,31 @@ export async function addParagraph(inputFile: string,outputFile: string,paragrap
     boxHeight*=1.05;
     boxWidth*=1.05;
     const totalTextHeight = lines.length * lineHeight;
-    
-    if (totalTextHeight > boxHeight - 20) {
+    const offset=(boxHeight-totalTextHeight)/2-20;
+    if (totalTextHeight > boxHeight*1.1) {
         console.log("Warning: Text is too large to fit inside the box.");
     }
 
     x=x+(secWidth-boxWidth)/2;
     y=y+(secHeight-boxWidth)/2;
 
-    page.drawRectangle({
+    const imageBytes = fs.readFileSync("../assets/torn-paper.png");
+    const image = await pdfDoc.embedPng(imageBytes);
+
+    // -K*math.random()  higher K = less chance of rotation
+    const theta=5*Math.pow(Math.E,Math.random()*-10);
+    const rotation= degrees(theta);
+
+    page.drawImage(image,{
+        x:x-15,
+        y:y-10,
+        height: boxHeight*1.2,
+        width:boxWidth*1.2,
+        rotate: rotation,
+    })
+
+    //post it design
+    /*page.drawRectangle({
         x:x,
         y:y,
         color:rgb(0.99,0.81,0.13),
@@ -148,11 +165,11 @@ export async function addParagraph(inputFile: string,outputFile: string,paragrap
         color: rgb(1, 0, 0),
         borderColor: rgb(0.5, 0.5, 0.5),
         borderWidth: 1,
-    })
+    })*/
 
-    let textY = y + boxHeight - 15; // Start from the top of the box
+    let textY = y + boxHeight - 15-offset; // Start from the top of the box
     for (const line of lines) {
-        page.drawText(line, { x: x + 10, y: textY, size: fontSize, font, color: rgb(0, 0, 0) });
+        page.drawText(line, { x: x + 25-(textY-y)*Math.sin((theta*Math.PI)/180), y: textY, size: fontSize, font, color: rgb(0, 0, 0),rotate: degrees(5) });
         textY -= lineHeight; 
     }
 

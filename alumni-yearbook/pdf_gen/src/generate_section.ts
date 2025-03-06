@@ -2,7 +2,7 @@ import {addImage,addParagraph,createDoc} from './section-content'
 import {addSectionHeading} from './section-heading'
 
 async function generateSection(templateFile:string,outputFile:string,title:string,images: string[],text: string[]){
-    const fontSize=60;
+    const fontSize=45;
     const margin=5;
     const totalPages=Math.ceil((images.length+text.length)/4);
     let currentPage=1;
@@ -20,7 +20,7 @@ async function generateSection(templateFile:string,outputFile:string,title:strin
                     currentPage++;
                 }
     }
-    await createDoc("../assets/base_bg.pdf",outputFile,totalPages);
+    await createDoc(templateFile,outputFile,totalPages);
     await addSectionHeading(outputFile, outputFile, title,fontSize,margin);
     while(images.length>0 || text.length>0){
         if (images.length>0){
@@ -32,7 +32,7 @@ async function generateSection(templateFile:string,outputFile:string,title:strin
         for( let x=0; x<2; x++){
             if(text.length>0){
                 const data=text.shift();
-                if (data!=undefined) await addParagraph(outputFile,outputFile,data,location[threshold][0],location[threshold][1],boxSize[0],boxSize[1],300,300,15,currentPage);
+                if (data!=undefined) await addParagraph(outputFile,outputFile,data,location[threshold][0],location[threshold][1],boxSize[0],boxSize[1],300,300,12,currentPage);
                 update();
             }
             
@@ -61,4 +61,4 @@ const text_data=[
 
 ]
 const outputFile="result.pdf";
-generateSection('../assets/base_bg.pdf',outputFile,'Memories',image_data,text_data);
+generateSection('../assets/base_bg.pdf',outputFile,'How I Met Your Mother',image_data,text_data);
