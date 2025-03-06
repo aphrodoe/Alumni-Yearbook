@@ -81,8 +81,8 @@ const data = {
           url: "/photos",
         },
         {
-          title: "Text",
-          url: "#",
+          title: "Add Yearbook Quote",
+          url: "/quote",
         },
       ],
     },
