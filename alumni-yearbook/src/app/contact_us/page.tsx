@@ -22,7 +22,7 @@ import { CardContent, Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
+import { toast, Toaster } from "sonner";
 import emailjs from 'emailjs-com';
 
 export default function ContactUs() {
@@ -99,6 +99,7 @@ export default function ContactUs() {
 
   return (
     <SidebarProvider>
+      <Toaster />
       <AppSidebar />
       <SidebarInset>
         <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
