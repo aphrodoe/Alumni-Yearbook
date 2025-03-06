@@ -19,6 +19,7 @@ import { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { Toaster } from "@/components/ui/sonner"
 import { Send, Search, UserCircle2, AlertCircle, ArrowLeft } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
@@ -314,6 +315,7 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         )}
       </div>
       <AppSidebar />
+      <Toaster />
       </SidebarProvider>
     );
   }
@@ -436,7 +438,7 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
           </div>
         </div>
       </SidebarInset>
+      <Toaster />
     </SidebarProvider>
   );
 }
-

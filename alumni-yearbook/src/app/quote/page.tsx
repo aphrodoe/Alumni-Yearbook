@@ -22,6 +22,7 @@ import { CardContent, Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { Toaster } from "@/components/ui/sonner";
 import { NextResponse } from 'next/server';
 
 export default function Dashboard() {
@@ -34,11 +35,6 @@ export default function Dashboard() {
 
   const handleSubmit= async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
-    if (!quote || !email) {
-      toast.error("Please fill in all fields", { description: "Missing some fields" });
-      return;
-    }
 
     try {
       const response = await fetch('/api/quote', {
@@ -130,12 +126,13 @@ export default function Dashboard() {
                   >
                     Submit
                   </Button>
-                </form>
+                </form> 
                 </CardContent>
             </Card>
         </div>
 
       </SidebarInset>
+      <Toaster theme="dark"/>
     </SidebarProvider>
   );
 }

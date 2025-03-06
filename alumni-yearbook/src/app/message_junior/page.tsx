@@ -23,6 +23,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { Toaster } from "@/components/ui/sonner";
 import emailjs from 'emailjs-com';
 
 export default function MessageJunior() {
@@ -168,6 +169,7 @@ export default function MessageJunior() {
                 </CardContent>
             </Card>
         </div>
+        <Toaster/>
       </SidebarInset>
     </SidebarProvider>
   );
