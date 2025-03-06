@@ -10,7 +10,7 @@ export async function addSectionHeading(inputFile: string, outputFile: string, h
     const { width,height } = page.getSize();
 
     pdfDoc.registerFontkit(fontkit);
-    const fontBytes = fs.readFileSync("../assets/Airstream.ttf");
+    const fontBytes = fs.readFileSync("../assets/PragerHeadlines.ttf");
     const font = await pdfDoc.embedFont(fontBytes);
 
     const textWidth = font.widthOfTextAtSize(heading, fontSize);
@@ -22,7 +22,17 @@ export async function addSectionHeading(inputFile: string, outputFile: string, h
     const x = (width-boxWidth)/2; 
     const y = height-margin-boxHeight; 
 
-    page.drawRectangle({
+    const imageBytes = fs.readFileSync("../assets/title.png");
+    const image = await pdfDoc.embedPng(imageBytes);
+
+    page.drawImage(image,{
+        x:x-5,
+        y:y-10,
+        width:boxWidth*1.1,
+        height:boxHeight*1.3,
+    })
+
+    /*page.drawRectangle({
         x,
         y,
         width: boxWidth,
@@ -30,7 +40,7 @@ export async function addSectionHeading(inputFile: string, outputFile: string, h
         borderWidth: 2,
         borderColor: rgb(0, 0, 0), 
         color: rgb(1,1,1), 
-    });
+    });*/
 
     
     page.drawText(heading, {
