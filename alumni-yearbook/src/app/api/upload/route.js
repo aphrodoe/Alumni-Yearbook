@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { v2 as cloudinary } from 'cloudinary';
-import connectToDatabase from '@/lib/mongodb';
+import connectToDatabase from '../../../lib/mongodb';
 import Image from '../../models/Image';
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "../auth/[...nextauth]/route";

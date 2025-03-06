@@ -48,11 +48,11 @@ const data = {
       items: [
         {
           title: "Yearbook",
-          url: "#",
+          url: "/yearbook",
         },
         {
-          title: "Personal information",
-          url: "#",
+          title: "New Section Added",
+          url: "/new_section",
         }
       ]
     },
@@ -81,8 +81,8 @@ const data = {
           url: "/photos",
         },
         {
-          title: "Text",
-          url: "#",
+          title: "Add Yearbook Quote",
+          url: "/quote",
         },
       ],
     },
