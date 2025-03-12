@@ -322,45 +322,54 @@ export async function POST(request: Request) {
         }
 
         // Extract images and sections from request body
-        const { images, sections } = await request.json();
+        const { images, sections,messages } = await request.json();
         const imageList = Array.isArray(images) ? images : Object.values(images);
         if (!images || !sections) {
             return NextResponse.json({ error: 'Missing image or section data' }, { status: 400 });
         }
 
-        interface Data {
-            _id: string,
-            email: string;
-            cloudinaryId: string;
-            cloudinaryUrl: string;
-            caption: string;
-            headtitle: string;
-            __v: 0
+        interface FormattedMessage {
+            formatted_message: string;
         }
+        const messageStrings: string[] = messages.map((msg: FormattedMessage) => msg.formatted_message);
 
         interface GroupedData {
-            [key: string]: {
+            [headtitle: string]: {
                 cloudinaryUrls: string[];
                 captions: string[];
             };
         }
-
-        // Process images and group by headtitle
+        
+        interface Data {
+            headtitle?: string;
+            cloudinaryUrl: string;
+            caption: string;
+        }
+        
         const groupedData: GroupedData = {};
+        
+        // Loop through imageList[0] and group data by headtitle
         for (let i = 0; i < imageList[0].length; i++) {
             const item: Data = imageList[0][i];
             const headtitle = item.headtitle || "No Headtitle";
-
+        
             if (!groupedData[headtitle]) {
                 groupedData[headtitle] = {
                     cloudinaryUrls: [],
                     captions: []
                 };
             }
-
+        
             groupedData[headtitle].cloudinaryUrls.push(item.cloudinaryUrl);
             groupedData[headtitle].captions.push(item.caption);
         }
+        
+        // Append new item with session email as headtitle
+        const userHeadtitle = session?.user?.email || "Unknown User";
+        groupedData[userHeadtitle] = {
+            cloudinaryUrls: [],
+            captions: messageStrings 
+        };
 
         console.log("Grouped Data:", groupedData);
 
@@ -380,10 +389,9 @@ export async function POST(request: Request) {
 
         // Delete old sections from DB
         await Section.deleteMany({ email: userEmail });
-        console.log("something");
+
         // Generate and upload PDFs
         for (const [headtitle, lists] of Object.entries(groupedData)) {
-            console.log("testing");
             await generateSection(
                 "assets/base_bg.pdf",
                 `${headtitle}.pdf`,
