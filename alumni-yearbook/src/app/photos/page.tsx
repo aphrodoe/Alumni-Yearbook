@@ -4,6 +4,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { AppSidebar } from "@/components/app-sidebar";
+import { toast } from "sonner";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -22,18 +23,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { toast } from "sonner";
-import { Toaster } from "@/components/ui/sonner";
-import PDFPage from "../pdf/page";
-
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-
 
 type User = {
   email: string;
@@ -51,8 +40,6 @@ export default function PhotosDashboard() {
   const { data: session, status } = useSession();
   const router = useRouter();
 
-  const [users, setUsers] = useState<User[]>([]);
-  const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const [description, setDescription] = useState('');
@@ -70,31 +57,10 @@ export default function PhotosDashboard() {
     }
   }, [status, router]);
 
-  useEffect(() => {
-      const fetchUsers = async () => {
-        try {
-          const response = await fetch('/api/users');
-          if (response.ok) {
-            const data = await response.json();
-            const filteredData = data.filter((user: User) => user.email !== session?.user?.email);
-            setUsers(filteredData);
-            setFilteredUsers(filteredData);
-          }
-        } catch (error) {
-          console.error('Error fetching users:', error);
-          toast.error('Failed to fetch users');
-        }
-      };
-  
-      if (session) {
-        fetchUsers();
-      }
-    }, [session]);
-
   const fetchImages = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('/api/images');
+      const response = await fetch('/api/images/get/');
       const data = await response.json();
       if (response.ok) {
         setImages(data.images || []);
@@ -163,54 +129,121 @@ export default function PhotosDashboard() {
     }
   };
 
+  const handleGeneratePDF = async () => {
+    try {
+      // Fetch image data
+      const imageResponse = await fetch("/api/images/get");
+  
+      const sectionResponse = await fetch("/api/section/get");
+  
+      if (!imageResponse.ok || !sectionResponse.ok) {
+        toast("Error", { description: "Failed to fetch data for PDF generation." });
+        return;
+      }
+  
+      const images = await imageResponse.json();
+      const sections = await sectionResponse.json();
+  
+      // Send data to the PDF generation route
+      const response = await fetch('/api/pdf', {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: session?.user?.email,
+          images,
+          sections,
+        }),
+      });
+  
+      const data = await response.json();
+      if (response.ok) {
+        toast("Success", { description: "PDF generated successfully!" });
+      } else {
+        toast("Error", { description: data.message || "Failed to generate PDF" });
+      }
+    } catch (error) {
+      toast("Error", { description: "An error occurred while generating the PDF." });
+    }
+  };
+  
+
   if (status === "loading") return <div>Loading...</div>;
   if (!session) return null;
 
-  return (<div>
-    <Toaster />
-    <SidebarProvider>
-      <AppSidebar />
-      <SidebarInset>
-        <header className="flex h-16 items-center gap-2 px-4">
-          <SidebarTrigger />
-          <Separator orientation="vertical" className="h-4" />
-          <Breadcrumb>
-            <BreadcrumbList>
-              <BreadcrumbItem><BreadcrumbLink href="#">Yearbook</BreadcrumbLink></BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem><BreadcrumbPage>Photos</BreadcrumbPage></BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
-        </header>
-        <div className="p-4">
-          <Card>
-            <CardHeader><CardTitle>Upload Yearbook Photos</CardTitle></CardHeader>
-            <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-4">
-              <Input value={description} onChange={e => setDescription(e.target.value)} placeholder="Add a title..." />
-                <Input type="file" accept="image/*" multiple onChange={handleImageChange} />
-                <Textarea value={caption} onChange={e => setCaption(e.target.value)} placeholder="Add a caption..." />
-                {previewUrls.length > 0 && (
-                  <div className="grid grid-cols-3 gap-2">
-                    {previewUrls.map((url, index) => (
-                      <img key={index} src={url} alt="Preview" className="w-24 h-24 object-cover rounded-md" />
-                    ))}
-                  </div>
-                )}
+  return (
+    <div>
+      <SidebarProvider>
+        <AppSidebar />
+        <SidebarInset>
+          <header className="flex h-16 items-center gap-2 px-4">
+            <SidebarTrigger />
+            <Separator orientation="vertical" className="h-4" />
+            <Breadcrumb>
+              <BreadcrumbList>
+                <BreadcrumbItem>
+                  <BreadcrumbLink href="#">Yearbook</BreadcrumbLink>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator />
+                <BreadcrumbItem>
+                  <BreadcrumbPage>Photos</BreadcrumbPage>
+                </BreadcrumbItem>
+              </BreadcrumbList>
+            </Breadcrumb>
+          </header>
+          <div className="p-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Upload Yearbook Photos</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <Input
+                    value={description}
+                    onChange={e => setDescription(e.target.value)}
+                    placeholder="Add a title..."
+                  />
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={handleImageChange}
+                  />
+                  <Textarea
+                    value={caption}
+                    onChange={e => setCaption(e.target.value)}
+                    placeholder="Add a caption..."
+                  />
+                  {previewUrls.length > 0 && (
+                    <div className="grid grid-cols-3 gap-2">
+                      {previewUrls.map((url, index) => (
+                        <img
+                          key={index}
+                          src={url}
+                          alt="Preview"
+                          className="w-24 h-24 object-cover rounded-md"
+                        />
+                      ))}
+                    </div>
+                  )}
 
-                <Button type="submit" disabled={isUploading}>
-                  {isUploading ? "Uploading..." : "Upload Photos"}
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
-        </div>
-        
-      </SidebarInset>
-    </SidebarProvider>
-    
+                  {/* Upload & Generate PDF Buttons */}
+                  <div className="flex gap-4">
+                    <Button type="submit" disabled={isUploading}>
+                      {isUploading ? "Uploading..." : "Upload Photos"}
+                    </Button>
+                    <Button
+                      onClick={handleGeneratePDF}
+                    >
+                      Generate PDF
+                    </Button>
+                  </div>
+                </form>
+              </CardContent>
+            </Card>
+
+          </div>
+        </SidebarInset>
+      </SidebarProvider>
     </div>
   );
-
-  
 }

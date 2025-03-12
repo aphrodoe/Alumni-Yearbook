@@ -1,6 +1,7 @@
 import { degrees, PDFDocument, rgb } from "pdf-lib";
 import fontkit from "@pdf-lib/fontkit";
 import fs from "fs";
+import path from "path";
 import axios from "axios";
 import dbConnect from '../../../lib/mongodb.js';
 import { v2 as cloudinary } from 'cloudinary';
@@ -101,7 +102,7 @@ async function addParagraph(inputFile: string,outputFile: string,paragraph: stri
     const page = pdfDoc.getPage(pageNo-1);
 
     pdfDoc.registerFontkit(fontkit);
-    const fontBytes = fs.readFileSync("../../../../pdf_gen/assets/Angelos.ttf");
+    const fontBytes = fs.readFileSync("assets/Angelos.ttf");
     const font = await pdfDoc.embedFont(fontBytes);
     const lineHeight = fontSize * 1.5;
     
@@ -139,7 +140,7 @@ async function addParagraph(inputFile: string,outputFile: string,paragraph: stri
     x=x+(secWidth-boxWidth)/2;
     y=y+(secHeight-boxWidth)/2;
 
-    const imageBytes = fs.readFileSync("../../../../pdf_gen/assets/torn-paper.png");
+    const imageBytes = fs.readFileSync("assets/torn-paper.png");
     const image = await pdfDoc.embedPng(imageBytes);
 
     // -K*math.random()  higher K = less chance of rotation
@@ -201,7 +202,7 @@ async function addSectionHeading(inputFile: string, outputFile: string, heading:
     const { width,height } = page.getSize();
 
     pdfDoc.registerFontkit(fontkit);
-    const fontBytes = fs.readFileSync("../../../../pdf_gen/assets/PragerHeadlines.ttf");
+    const fontBytes = fs.readFileSync("assets/PragerHeadlines.ttf");
     const font = await pdfDoc.embedFont(fontBytes);
 
     const textWidth = font.widthOfTextAtSize(heading, fontSize);
@@ -213,7 +214,7 @@ async function addSectionHeading(inputFile: string, outputFile: string, heading:
     const x = (width-boxWidth)/2; 
     const y = height-margin-boxHeight; 
 
-    const imageBytes = fs.readFileSync("../../../../pdf_gen/assets/title.png");
+    const imageBytes = fs.readFileSync("assets/title.png");
     const image = await pdfDoc.embedPng(imageBytes);
 
     page.drawImage(image,{
@@ -302,31 +303,41 @@ cloudinary.config({
 
 export async function POST(request: Request) {
     const session = await getServerSession(authOptions);
-      if (!session) {
+    if (!session) {
         return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
-      }
-    
-    try{
+    }
+
+    try {
         const userEmail = session.user?.email;
         if (!userEmail) {
             return NextResponse.json({ error: 'No email found in session' }, { status: 400 });
         }
-        try{
+
+        try {
             await dbConnect();
-        }
-        catch(error){
-            console.error('Error connecting to Db', error);
+        } catch (error) {
+            console.log("Error connecting to DB");
+            console.error('Error connecting to DB:', error);
             return NextResponse.json({ error: 'Failed to connect to database' }, { status: 500 });
         }
-        //Collecting and processing data
-        interface Data {
-            email: string,
-            cloudinaryId:string,
-            cloudinaryUrl:string,
-            caption: string,
-            headtitle:string,
+
+        // Extract images and sections from request body
+        const { images, sections } = await request.json();
+        const imageList = Array.isArray(images) ? images : Object.values(images);
+        if (!images || !sections) {
+            return NextResponse.json({ error: 'Missing image or section data' }, { status: 400 });
         }
-        
+
+        interface Data {
+            _id: string,
+            email: string;
+            cloudinaryId: string;
+            cloudinaryUrl: string;
+            caption: string;
+            headtitle: string;
+            __v: 0
+        }
+
         interface GroupedData {
             [key: string]: {
                 cloudinaryUrls: string[];
@@ -334,10 +345,10 @@ export async function POST(request: Request) {
             };
         }
 
-        let response= await fetch(`http://localhost:3000/api/images/get/`);
-        const data:Data[] = await response.json();
+        // Process images and group by headtitle
         const groupedData: GroupedData = {};
-        data.forEach(item => {
+        for (let i = 0; i < imageList[0].length; i++) {
+            const item: Data = imageList[0][i];
             const headtitle = item.headtitle || "No Headtitle";
 
             if (!groupedData[headtitle]) {
@@ -346,59 +357,74 @@ export async function POST(request: Request) {
                     captions: []
                 };
             }
+
             groupedData[headtitle].cloudinaryUrls.push(item.cloudinaryUrl);
             groupedData[headtitle].captions.push(item.caption);
-        });
+        }
 
-        //deleting old sections
-        interface SectionStruct {
-            email: string;
-            cloudinaryId: string;
-            cloudinaryUrl: string;
-            headtitle: string;
-          }
-        let sectionResponse = await fetch(`http://localhost:3000/api/section/get/`);
-        const sections: SectionStruct[] = await sectionResponse.json();
-          
-          // Iterate through sections and delete each item from Cloudinary
-        for (const section of sections) {
+        console.log("Grouped Data:", groupedData);
+
+        // Deleting old sections from Cloudinary
+        for (let i = 0; i < sections.length; i++) {
+            const section = sections[i];
             try {
-              const result = await cloudinary.uploader.destroy(section.cloudinaryId, { resource_type: "raw" });
+                await cloudinary.uploader.destroy(section.cloudinaryId, { resource_type: "raw" });
             } catch (error) {
+                console.log(error);
                 return NextResponse.json(
-                    { message: 'Error deleting Sections'}, 
+                    { message: 'Error deleting sections' },
                     { status: 500 }
-                  );
+                );
             }
-          }
-        const del= await Section.deleteMany({ email: userEmail });
+        }
 
-        //Pdf generation and saving
-        Object.entries(groupedData).forEach(async ([headtitle, lists]) => {
-            await generateSection("../../../../pdf_gen/assets/base_bg.pdf",`${headtitle}.pdf`,headtitle,lists.cloudinaryUrls,lists.captions);
-            try{
-            const uploadResponse = await cloudinary.uploader.upload(`${headtitle}.pdf`, {
-                resource_type: "raw",
-            });
-            return new Section({
+        // Delete old sections from DB
+        await Section.deleteMany({ email: userEmail });
+        console.log("something");
+        // Generate and upload PDFs
+        for (const [headtitle, lists] of Object.entries(groupedData)) {
+            console.log("testing");
+            await generateSection(
+                "assets/base_bg.pdf",
+                `${headtitle}.pdf`,
+                headtitle,
+                lists.cloudinaryUrls,
+                lists.captions
+            );
+
+            try {
+                const uploadResponse = await cloudinary.uploader.upload(`${headtitle}.pdf`, {
+                    resource_type: "raw",
+                });
+
+                console.log("PDF created and uploaded:", headtitle);
+
+                await new Section({
                     email: userEmail,
                     cloudinaryId: uploadResponse.public_id,
                     cloudinaryUrl: uploadResponse.secure_url,
                     headtitle: headtitle,
-                    }).save();
-            }
-            catch (error) {
+                }).save();
+
+                fs.unlink(`${headtitle}.pdf`, (err) => {
+                    if (err) {
+                        console.error(`Error deleting file ${headtitle}.pdf:`, err);
+                    } else {
+                        console.log(`File ${headtitle}.pdf deleted successfully.`);
+                    }
+                });
+                
+            } catch (error) {
                 console.error("Error uploading PDF:", error);
             }
-        });
-        return NextResponse.json({ 
-            message: 'Process successful'
-          });
-    }catch (error) {
-        console.error('Error uploading pdf:', error);
+        }
+
+        return NextResponse.json({ message: 'Process successful' });
+    } catch (error) {
+        console.error('Error processing request:', error);
         return NextResponse.json(
-          { message: 'Error uploading images'}, 
-          { status: 500 }
+            { message: 'Error processing request' },
+            { status: 500 }
         );
-      }
+    }
 }

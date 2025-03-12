@@ -1,7 +1,7 @@
 'use client';
 
 import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { AppSidebar } from "@/components/app-sidebar";
 import {
   Breadcrumb,
@@ -17,18 +17,40 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { useEffect, ReactNode } from "react";
+import { useEffect, useState } from "react";
 import PDFPage from "../pdf/page";
 
 export default function Dashboard() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const [sectionTitle, setSectionTitle] = useState("Yearbook");
+  const [pdfUrl, setPdfUrl] = useState("/YEARBOOK_BATCH_2024.pdf");
 
   useEffect(() => {
     if (status === "unauthenticated") {
       router.push("/api/auth/error");
     }
   }, [status, router]);
+
+  // Handle URL parameters to load correct PDF
+  useEffect(() => {
+    // Get section parameter from URL
+    const section = searchParams.get('section');
+    // Get cloudinary URL parameter from URL
+    const url = searchParams.get('url');
+
+    if (section) {
+      setSectionTitle(section);
+    }
+
+    if (url) {
+      setPdfUrl(url);
+    } else {
+      // Default PDF if no URL is provided
+      setPdfUrl("/YEARBOOK_BATCH_2024.pdf");
+    }
+  }, [searchParams]);
 
   if (status === "loading") {
     return <div>Loading...</div>;
@@ -55,17 +77,16 @@ export default function Dashboard() {
                 </BreadcrumbItem>
                 <BreadcrumbSeparator className="hidden md:block" />
                 <BreadcrumbItem>
-                  <BreadcrumbPage>Yearbook</BreadcrumbPage>
+                  <BreadcrumbPage>{sectionTitle}</BreadcrumbPage>
                 </BreadcrumbItem>
               </BreadcrumbList>
             </Breadcrumb>
           </div>
         </header>
         <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-          <PDFPage/>
+          <PDFPage fileLocation={pdfUrl} />
         </div>
       </SidebarInset>
     </SidebarProvider>
-    
   );
 }
