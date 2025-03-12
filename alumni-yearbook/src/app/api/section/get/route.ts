@@ -17,9 +17,13 @@ export async function GET(request: Request) {
         if (!userEmail) {
             return NextResponse.json({ error: 'No email found in session' }, { status: 400 });
         }
-
-        const userSections = await Section.find({ email: userEmail });
-
+        let userSections;
+        try{
+            userSections = await Section.find({ email: userEmail });
+        }
+        catch(error){
+            return NextResponse.json({ error: 'Failed gather' }, { status: 500 });
+        }
         return NextResponse.json(userSections);
     } catch (error) {
         console.error('Error fetching user Sections:', error);
