@@ -27,6 +27,7 @@ export const authOptions: NextAuthOptions = {
             await User.create({
               email: user.email,
               name: user.name,
+              hasCompletedPreferences: false,
             });
           }
         } catch (error) {
