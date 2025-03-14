@@ -1,9 +1,10 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
 import { Upload, Quote, CheckCircle } from "lucide-react"
+import { getSession } from "next-auth/react"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -26,6 +27,37 @@ export default function UserPreferenceForm() {
     step5Data: "",
   })
 
+  // Check if user has already completed preferences
+  useEffect(() => {
+    const checkIfPreferencesCompleted = async () => {
+      const session = await getSession();
+      if (session?.user?.email) {
+        try {
+          const response = await fetch(`/api/users/check-preferences?email=${session.user.email}`, {
+            cache: 'no-store',
+            headers: {
+              'Pragma': 'no-cache',
+              'Cache-Control': 'no-cache'
+            }
+          });
+          const data = await response.json();
+          console.log("Preference check from form:", data);
+          
+          if (data.hasCompletedPreferences === true) {
+            console.log("User already completed preferences, redirecting to dashboard");
+            router.push("/dashboard");
+          }
+        } catch (error) {
+          console.error("Error checking preferences from form:", error);
+        }
+      } else {
+        console.log("No session found, user may need to login");
+      }
+    };
+    
+    checkIfPreferencesCompleted();
+  }, [router]);
+
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0]
@@ -47,12 +79,37 @@ export default function UserPreferenceForm() {
 
   const handleNext = () => {
     if (step < totalSteps) {
-      setStep(step + 1)
+      setStep(step + 1);
     } else {
-      console.log("Form submitted:", formData)
-      router.push("/dashboard")
+      fetch('/api/users/update-preference', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache'
+        },
+        body: JSON.stringify({
+          photoUrl: formData.photoPreview,
+          quote: formData.quote,
+        }),
+        credentials: 'include' 
+      })
+      .then(async response => {
+        if (response.ok) {
+          console.log("Preferences updated successfully");
+          setTimeout(() => {
+            router.push('/dashboard');
+          }, 500);
+        } else {
+          const errorData = await response.json();
+          console.error('Failed to update preferences:', errorData);
+        }
+      })
+      .catch(error => {
+        console.error('Error updating preferences:', error);
+      });
     }
-  }
+  };
 
   const handleBack = () => {
     if (step > 1) {

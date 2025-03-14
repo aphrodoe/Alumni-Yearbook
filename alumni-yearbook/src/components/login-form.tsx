@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardDescription, CardTitle } from "@/components/ui/card";
 import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 export function LoginForm({
   className,
@@ -13,32 +14,37 @@ export function LoginForm({
   const { data: session, status } = useSession();
   const router = useRouter();
 
-  // Function to handle login logic
-  const handleLogin = async () => {
-    if (!session) return;
-
-    try {
-      // Simulated API call to fetch user data
-      const response = await fetch("/api/user-data");
-      const userData = await response.json();
-
-      if (userData?.hasCompletedPreferences) {
-        router.push("/dashboard");
-      } else {
-        router.push("/user-preference");
-      }
-    } catch (error) {
-      console.error("Error fetching user data:", error);
+  useEffect(() => {
+    if (session?.user?.email) {
+      checkUserPreferences(session.user.email);
     }
-  };
+  }, [session]);
+
+const checkUserPreferences = async (email: string) => {
+  try {
+    const response = await fetch(`/api/users/check-preferences?email=${email}`);
+    const data = await response.json();
+    
+    console.log("Preferences check response:", data);
+    
+    if (data.hasCompletedPreferences === true) {
+      console.log("User has completed preferences, redirecting to dashboard");
+      router.push("/dashboard");
+    } else {
+      console.log("User needs to complete preferences, redirecting to preference form");
+      router.push("/user-preference");
+    }
+  } catch (error) {
+    console.error("Error checking user preferences:", error);
+  }
+};
 
   if (status === "loading") {
     return <div>Loading...</div>;
   }
 
   if (session) {
-    handleLogin();
-    return null;
+    return null; 
   }
 
   return (
@@ -54,7 +60,7 @@ export function LoginForm({
               <Button
                 variant="outline"
                 className="w-full"
-                onClick={() => signIn("google").then(handleLogin)}
+                onClick={() => signIn("google")}
               >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="h-5 w-5 mr-2">
                   <path
