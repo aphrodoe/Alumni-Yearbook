@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { AppSidebar } from "@/components/app-sidebar";
 import { toast } from "sonner";
+import axios from "axios";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -47,6 +48,7 @@ export default function PhotosDashboard() {
   const [isUploading, setIsUploading] = useState(false);
   const [images, setImages] = useState<ImageType[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isGeneratingMessagesPDF, setIsGeneratingMessagesPDF] = useState(false);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -166,6 +168,74 @@ export default function PhotosDashboard() {
     }
   };
   
+  const handleGenerateMessages = async () => {
+    setIsGeneratingMessagesPDF(true);
+    try {
+      const messagesResponse = await axios.get('/api/messages/fetchall', {
+        params: {
+          receiver: session?.user?.email
+        }
+      });
+  
+      if (!messagesResponse.data.messages || messagesResponse.data.messages.length === 0) {
+        toast("No Messages", { description: "No messages found to generate PDF" });
+        setIsGeneratingMessagesPDF(false);
+        return;
+      }
+  
+      const messagesBySender: { [key: string]: any[] } = {};
+      for (const message of messagesResponse.data.messages) {
+        if (!messagesBySender[message.email_sender]) {
+          messagesBySender[message.email_sender] = [];
+        }
+        messagesBySender[message.email_sender].push(message);
+      }
+  
+      const senderEmails = Object.keys(messagesBySender);
+      const senderNames: { [key: string]: string } = {};
+      
+      for (const email of senderEmails) {
+        const nameResponse = await axios.get('/api/users/getname', {
+          params: { email }
+        });
+        senderNames[email] = nameResponse.data.name?.name || 'Unknown User';
+      }
+  
+      const messageData = [];
+      
+      for (const [email, messages] of Object.entries(messagesBySender)) {
+        messageData.push({
+          senderName: senderNames[email],
+          senderEmail: email,
+          messages: messages.map(msg => ({
+            text: msg.message,
+            timestamp: msg.timestamp
+          }))
+        });
+      }
+  
+      const response = await axios.post('/api/pdf/messages', {
+        messages: messageData
+      });
+      
+      if (response.status === 200) {
+        toast("Success", { 
+          description: "Messages PDF generated successfully!", 
+          action: {
+            label: "View PDF",
+            onClick: () => window.open(response.data.url, '_blank')
+          }
+        });
+      } else {
+        toast("Error", { description: "Failed to generate messages PDF" });
+      }
+    } catch (error) {
+      console.error('Error generating message PDF:', error);
+      toast("Error", { description: "Failed to generate PDF from messages" });
+    } finally {
+      setIsGeneratingMessagesPDF(false);
+    }
+  };
 
   if (status === "loading") return <div>Loading...</div>;
   if (!session) return null;
@@ -235,6 +305,12 @@ export default function PhotosDashboard() {
                       onClick={handleGeneratePDF}
                     >
                       Generate PDF
+                    </Button>
+                    <Button
+                      onClick={handleGenerateMessages}
+                      disabled={isGeneratingMessagesPDF}
+                    >
+                      {isGeneratingMessagesPDF ? "Generating..." : "Generate PDF for messages"}
                     </Button>
                   </div>
                 </form>
