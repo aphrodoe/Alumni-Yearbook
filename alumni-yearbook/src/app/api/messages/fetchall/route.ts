@@ -14,9 +14,13 @@ export async function GET(request: Request) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        // Extract query parameters from URL
-        const { searchParams } = new URL(request.url);
-        const receiver = searchParams.get('receiver'); // Get 'receiver' from query params
+        // Get the URL and parse the query params
+        const url = new URL(request.url);
+        const receiver = url.searchParams.get('receiver');
+
+        if (!receiver) {
+            return NextResponse.json({ error: 'Receiver email is required' }, { status: 400 });
+        }
 
         if (!receiver) {
             return NextResponse.json({ error: 'Missing receiver parameter' }, { status: 400 });

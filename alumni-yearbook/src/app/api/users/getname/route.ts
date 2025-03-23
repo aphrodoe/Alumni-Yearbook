@@ -8,19 +8,23 @@ export async function GET(request: Request) {
     try {
         await dbConnect();
 
-        const session = await getServerSession(authOptions); // Ensure session is awaited
+        const session = await getServerSession(authOptions);
 
         if (!session) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        // Extract query parameters from URL
-        const { searchParams } = new URL(request.url);
-        const email = searchParams.get('email'); // Get 'email' from query params
+        // Get the URL and parse the query params
+        const url = new URL(request.url);
+        const email = url.searchParams.get('email');
 
         if (!email) {
-            return NextResponse.json({ error: 'Missing email parameter' }, { status: 400 });
+            return NextResponse.json({ error: 'Email is required' }, { status: 400 });
         }
+
+        const name = await User.findOne({
+            email: email
+        });
 
         // Fetch user by email
         const user = await User.findOne({ email });

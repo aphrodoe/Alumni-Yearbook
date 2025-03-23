@@ -31,7 +31,6 @@ interface SectionStruct {
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const [navItems, setNavItems] = React.useState<any[]>([]);
 
-  // Fetch sections from API
   React.useEffect(() => {
     async function fetchSections() {
       try {
@@ -39,13 +38,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         if (!response.ok) throw new Error("Failed to fetch sections");
         const data: SectionStruct[] = await response.json();
 
-        // Generate dynamic section items with the cloudinaryUrl as a query parameter
         const dynamicSections = data.map((section) => ({
           title: section.headtitle,
           url: `/yearbook?section=${encodeURIComponent(section.headtitle)}&url=${encodeURIComponent(section.cloudinaryUrl)}`,
         }));
 
-        // Construct the nav items, keeping "Yearbook" first
         const dynamicNavItems = [
           {
             title: "Profile",
@@ -55,9 +52,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             items: [
               { 
                 title: "Yearbook", 
-                url: "/yearbook", // URL for the default yearbook without params
+                url: "/yearbook",
               },
-              ...dynamicSections, // Dynamically fetched sections with query params
+              ...dynamicSections,
             ],
           },
           {
@@ -79,9 +76,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             ],
           },
           {
-            title: "Contact US",
+            title: "Contact Us",
             url: "/contact_us",
             icon: Bell,
+            items :[
+              { title: "Email Us", url: "/contact_us" },
+            ]
           },
         ];
 
