@@ -26,9 +26,14 @@ export async function GET(request: Request) {
             email: email
         });
 
-        return NextResponse.json({ 
-            name: name
-        });
+        // Fetch user by email
+        const user = await User.findOne({ email });
+
+        if (!user) {
+            return NextResponse.json({ error: 'User not found' }, { status: 404 });
+        }
+
+        return NextResponse.json({ name: user.name });
 
     } catch (error) {
         console.error('Error finding name: ', error);

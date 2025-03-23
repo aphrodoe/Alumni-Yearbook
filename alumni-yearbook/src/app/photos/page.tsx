@@ -86,6 +86,7 @@ export default function PhotosDashboard() {
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+
     e.preventDefault();
 
     if (selectedImages.length === 0) {
@@ -132,40 +133,90 @@ export default function PhotosDashboard() {
   };
 
   const handleGeneratePDF = async () => {
-    try {
-      // Fetch image data
-      const imageResponse = await fetch("/api/images/get");
+    interface Message {
+      _id: string;
+      email_sender: string;
+      email_receiver: string;
+      message: string;
+      timestamp: string;
+  }
   
-      const sectionResponse = await fetch("/api/section/get");
-  
-      if (!imageResponse.ok || !sectionResponse.ok) {
-        toast("Error", { description: "Failed to fetch data for PDF generation." });
-        return;
-      }
-  
-      const images = await imageResponse.json();
-      const sections = await sectionResponse.json();
-  
-      // Send data to the PDF generation route
-      const response = await fetch('/api/pdf', {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: session?.user?.email,
-          images,
-          sections,
-        }),
-      });
-  
-      const data = await response.json();
-      if (response.ok) {
-        toast("Success", { description: "PDF generated successfully!" });
-      } else {
-        toast("Error", { description: data.message || "Failed to generate PDF" });
-      }
-    } catch (error) {
-      toast("Error", { description: "An error occurred while generating the PDF." });
+    interface FormattedMessage {
+        formatted_message: string;
     }
+  
+    try {
+        // Fetch image data
+        const imageResponse = await fetch("/api/images/get");
+        const sectionResponse = await fetch("/api/section/get");
+    
+        if (!imageResponse.ok || !sectionResponse.ok) {
+            toast("Error", { description: "Failed to fetch data for PDF generation." });
+            return;
+        }
+    
+        const images = await imageResponse.json();
+        const sections = await sectionResponse.json();
+    
+        let formattedMessages: FormattedMessage[] = [];
+    
+        if (session && session.user?.email) {
+            const email = encodeURIComponent(session.user.email);
+            const messageResponse = await fetch(`/api/messages/fetchall?receiver=${email}`, {
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' },
+            });
+    
+            if (messageResponse.ok) {
+                const responseData = await messageResponse.json();
+                const messages: Message[] = responseData.messages; // Explicitly type the messages
+    
+                // Extract unique sender emails
+                const uniqueSenders = [...new Set(messages.map((msg) => msg.email_sender))];
+    
+                // Fetch usernames for each sender
+                const userFetchPromises = uniqueSenders.map(async (email) => {
+                    const userResponse = await fetch(`/api/users/getname?email=${email}`);
+                    const userData = await userResponse.json();
+                    return { email, name: userData?.name || "Unknown" };
+                });
+    
+                const userMapping = await Promise.all(userFetchPromises);
+                const userMap: Record<string, string> = Object.fromEntries(
+                    userMapping.map((user) => [user.email, user.name])
+                );
+    
+                // Format messages
+                formattedMessages = messages.map((msg) => ({
+                    formatted_message: `Message: ${msg.message}  From: ${userMap[msg.email_sender] || "Unknown"}`,
+                }));
+    
+                console.log(formattedMessages);
+            }
+        }
+    
+        // Send data to the PDF generation route
+        const response = await fetch('/api/pdf', {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                email: session?.user?.email,
+                images,
+                sections,
+                messages: formattedMessages, // Send formatted messages
+            }),
+        });
+    
+        const data = await response.json();
+        if (response.ok) {
+            toast("Success", { description: "PDF generated successfully!" });
+        } else {
+            toast("Error", { description: data.message || "Failed to generate PDF" });
+        }
+    } catch (error) {
+        console.error("Error during PDF generation:", error);
+        toast("Error", { description: "An unexpected error occurred." });
+    }  
   };
   
   const handleGenerateMessages = async () => {
