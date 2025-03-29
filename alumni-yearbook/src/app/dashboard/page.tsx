@@ -10,14 +10,12 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 
-// Import your components
 import FeedContent from "@/components/feed-content";
 import PDFViewer from "@/components/PDFViewer";
 import ImageUploader from "@/components/image-uploader";
 import MessageBatchmates from "@/components/message-batchmates";
 import MessageJunior from "@/components/message-junior";
 import ContactForm from "@/components/contact-form"; 
-
 
 export default function Dashboard() {
   const { data: session, status } = useSession();
@@ -31,7 +29,6 @@ export default function Dashboard() {
     }
   }, [status, router]);
 
-  // Handle navigation changes from the sidebar
   const handleNavChange = (content: string, url?: string) => {
     setActiveContent(content);
     if (url) {
@@ -41,11 +38,10 @@ export default function Dashboard() {
     }
   };
 
-
   const renderContent = () => {
     switch (activeContent) {
       case "yearbook":
-        return < PDFViewer fileLocation={sectionUrl || ""} />;
+        return <PDFViewer fileLocation={sectionUrl || ""} />;
       case "add":
         return <ImageUploader />;
       case "message_batchmate":
@@ -76,7 +72,7 @@ export default function Dashboard() {
       <SidebarInset>
         <header className="flex h-16 shrink-0 items-center gap-2 px-4">
         </header>
-        <div className="flex-1 overflow-auto" style={{ 
+        <div className="flex-1 overflow-auto content-container" style={{ 
           height: 'calc(100vh - 4rem)', 
           position: 'relative',
           WebkitOverflowScrolling: 'touch'
@@ -84,7 +80,6 @@ export default function Dashboard() {
           {renderContent()}
         </div>
       </SidebarInset>
-
     </SidebarProvider>
   );
 }

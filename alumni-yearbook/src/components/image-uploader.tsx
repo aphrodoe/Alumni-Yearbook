@@ -281,7 +281,7 @@ export default function ImageUploader() {
   return (
     <div className="max-w-2xl mx-auto">
       <Toaster />
-      <h2 className="text-2xl font-bold text-blue-600 mb-6">Add Images & Text</h2>
+      <h2 className="text-2xl font-bold text-blue-600 mb-6 pt-4">Add Images & Text</h2>
 
       <Card className="border-blue-100 bg-white shadow-sm text-gray-800">
         <CardHeader>

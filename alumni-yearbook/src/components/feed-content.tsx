@@ -49,7 +49,7 @@ const feedItems = [
 export default function FeedContent() {
   return (
     <div className="max-w-3xl mx-auto space-y-6">
-      <h2 className="text-2xl font-bold text-blue-600 mb-6">Class Feed</h2>
+      <h2 className="text-2xl font-bold text-blue-600 mb-6 pt-4">Class Feed</h2>
 
       {feedItems.map((item) => (
         <Card key={item.id} className="border-blue-100 bg-white shadow-sm text-gray-800 overflow-hidden">

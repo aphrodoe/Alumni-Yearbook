@@ -261,7 +261,7 @@ export default function MessageBatchmates() {
   if (isMobileView) {
     return (
       <div className="flex flex-col h-full w-full">
-        <h2 className="text-2xl font-bold text-blue-600 mb-6 pt-6">A Final Adieu</h2>
+        <h2 className="text-2xl font-bold text-blue-600 mb-6 pt-4">A Final Adieu</h2>
         {showUserList ? (
           <div className="flex-grow overflow-y-auto w-full">
             <div className="p-4 w-full space-y-4">

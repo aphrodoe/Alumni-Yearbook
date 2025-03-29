@@ -71,6 +71,19 @@ export function AppSidebar({ children, onNavChange, activeContent }: AppSidebarP
     fetchSections();
   }, []);
 
+  // Add effect to handle body overflow when mobile menu is open
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.classList.add('overflow-hidden');
+    } else {
+      document.body.classList.remove('overflow-hidden');
+    }
+    
+    return () => {
+      document.body.classList.remove('overflow-hidden');
+    };
+  }, [mobileMenuOpen]);
+
   const handleLogout = () => {
     router.push("/")
   }
@@ -144,10 +157,10 @@ export function AppSidebar({ children, onNavChange, activeContent }: AppSidebarP
         </div>
       </div>
 
-      {/* Mobile Menu */}
+      {/* Mobile Menu - with scrolling fix */}
       {mobileMenuOpen && (
-        <div className="md:hidden fixed inset-0 z-40 bg-white pt-16 px-4">
-          <div className="flex flex-col space-y-2">
+        <div className="md:hidden fixed inset-0 z-40 bg-white pt-16 px-4 overflow-y-auto mobile-menu-container">
+          <div className="flex flex-col space-y-2 pb-20">
             {navItems.map((item) => {
               if (item.dropdown) {
                 return (

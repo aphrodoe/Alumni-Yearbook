@@ -29,9 +29,6 @@ export default function ContactForm() {
     setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
-  const handleSelectChange = (value: string) => {
-    setFormData((prev) => ({ ...prev, subject: value }))
-  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -64,7 +61,7 @@ export default function ContactForm() {
             from_name: userName || "A User",
             message: formData.message,
             subject: formData.subject,
-            to_email: "anshmcs@gmail.com"
+            to_email: "akhildhyani420@gmail.com"
           },
           process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY!
         )
@@ -100,7 +97,7 @@ export default function ContactForm() {
   return (
     <div className="max-w-2xl mx-auto">
       <Toaster />
-      <h2 className="text-2xl font-bold text-blue-600 mb-6">Contact Us</h2>
+      <h2 className="text-2xl font-bold text-blue-600 mb-6 pt-4">Contact Us</h2>
 
       <Card className="border-blue-100 bg-white shadow-sm text-gray-800">
         <CardHeader>
@@ -122,17 +119,14 @@ export default function ContactForm() {
 
               <div className="space-y-2">
                 <Label htmlFor="subject">Subject</Label>
-                <Select onValueChange={handleSelectChange} value={formData.subject}>
-                  <SelectTrigger className="bg-white border-gray-300">
-                    <SelectValue placeholder="Select a subject" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="technical-issue">Technical Issue</SelectItem>
-                    <SelectItem value="feature-request">Feature Request</SelectItem>
-                    <SelectItem value="content-issue">Content Issue</SelectItem>
-                    <SelectItem value="general-inquiry">General Inquiry</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Input
+                  id="subject"
+                  name="subject"
+                  placeholder="Enter the subject of your message"
+                  value={formData.subject}
+                  onChange={handleChange}
+                  className="bg-gray-100 border-gray-300">
+                </Input>
               </div>
 
               <div className="space-y-2">

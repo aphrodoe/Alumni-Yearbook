@@ -3,18 +3,43 @@
 @tailwind utilities;
 
 html, body {
-    overscroll-behavior-y: none;
-    overflow-x: hidden;
-    height: 100%;
+  overscroll-behavior-y: none;
+  overflow-x: hidden;
+  height: 100%;
+}
+
+#progress-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  height: 0;
+  background: transparent;
+}
+
+.mobile-menu-container {
+  -webkit-overflow-scrolling: touch;
+  max-height: 100vh;
+  padding-bottom: env(safe-area-inset-bottom, 20px);
+}
+
+.content-container {
+  -webkit-overflow-scrolling: touch;
+}
+body.overflow-hidden {
+  overflow: hidden;
+  position: fixed;
+  width: 100%;
+  height: 100%;
+}
+
+@supports (padding: max(0px)) {
+  .mobile-menu-container {
+    padding-bottom: max(20px, env(safe-area-inset-bottom));
   }
-  
-  #progress-container {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 1000;
-    height: 0;
-    background: transparent;
-  }
-  
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
