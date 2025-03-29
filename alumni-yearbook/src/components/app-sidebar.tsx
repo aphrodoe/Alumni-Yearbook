@@ -104,7 +104,7 @@ export function AppSidebar({ children, onNavChange, activeContent }: AppSidebarP
     },
     {
       id: "add",
-      label: "Add New Section",
+      label: "Upload memories",
       icon: Upload,
     },
     { id: "contact_us", label: "Contact Us", icon: Mail },

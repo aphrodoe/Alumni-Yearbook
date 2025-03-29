@@ -1,67 +1,61 @@
-import { NextResponse } from "next/server";
-import dbConnect from "@/lib/mongodb";
-import User from "@/app/models/User";
+import { NextResponse } from 'next/server';
+import { v2 as cloudinary } from 'cloudinary';
+import connectToDatabase from '@/lib/mongodb';
+import UserPreference from '@/app/models/UserPreference';
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "../../auth/[...nextauth]/route";
 
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
+
+// In your update-preference route
 export async function POST(request: Request) {
+  const session = await getServerSession(authOptions);
+  if (!session || !session.user?.email) {
+    return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+  }
+
   try {
-    await dbConnect();
-    console.log("Connected to database");
-
-    const session = await getServerSession(authOptions);
-    console.log("Session retrieved:", session ? "Success" : "Null");
-
-    if (!session || !session.user?.email) {
-      console.log("Authentication failed - no valid session or email");
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    const { photoUrl, quote, clubs } = await request.json();
+    
+    if (!photoUrl || !quote || !clubs) {
+      return NextResponse.json(
+        { message: 'All fields are required' }, 
+        { status: 400 }
+      );
     }
 
-    const { email } = session.user;
-    console.log("Updating preferences for email:", email);
+    await connectToDatabase();
 
-    let formData = {};
-    try {
-      formData = await request.json();
-      console.log("Form data received:", formData);
-    } catch (e) {
-      console.log("No form data in request or invalid JSON");
-    }
+    // Upload base64 image to Cloudinary
+    const uploadResponse = await cloudinary.uploader.upload(photoUrl, {
+      upload_preset: process.env.CLOUDINARY_UPLOAD_PRESET || ''
+    });
 
-    const updatedUser = await User.findOneAndUpdate(
-      { email },
-      { 
-        hasCompletedPreferences: true,
+    // Create or update user preference
+    const userPreference = await UserPreference.findOneAndUpdate(
+      { email: session.user.email },
+      {
+        photoUrl: uploadResponse.secure_url,
+        quote,
+        clubs,
       },
-      { new: true } 
+      { upsert: true, new: true }
     );
-    
-    console.log("Update result:", updatedUser);
-    
-    if (!updatedUser) {
-      console.log("User not found with email:", email);
-      return NextResponse.json({ message: "User not found" }, { status: 404 });
-    }
-    
-    console.log("Updated user preferences status:", {
-      email,
-      hasCompletedPreferences: updatedUser.hasCompletedPreferences
-    });
-    
-    console.log("Preferences updated successfully for:", email);
+
     return NextResponse.json({ 
-      message: "Preferences updated successfully",
-      user: {
-        email: updatedUser.email,
-        name: updatedUser.name,
-        hasCompletedPreferences: updatedUser.hasCompletedPreferences
-      }
+      message: 'Preferences updated successfully',
+      userPreference
     });
+
   } catch (error) {
-    console.error("Error updating preferences:", error);
-    return NextResponse.json({ 
-      error: "Failed to update preferences", 
-      details: error instanceof Error ? error.message : String(error)
-    }, { status: 500 });
+    console.error('Error updating preferences:', error);
+    return NextResponse.json(
+      { message: 'Error updating preferences', error: (error as Error).message }, 
+      { status: 500 }
+    );
   }
 }

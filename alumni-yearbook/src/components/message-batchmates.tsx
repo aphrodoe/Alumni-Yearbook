@@ -10,7 +10,6 @@ import { toast as sonnerToast } from "sonner"
 import { Toaster } from "@/components/ui/sonner"
 import { Send, Search, AlertCircle, ArrowLeft, MessageSquare } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
   Dialog,
   DialogContent,
@@ -26,7 +25,6 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card"
 type User = {
   email: string
   name: string
-  program?: string
   quote?: string
   profilePicture?: string
 }
@@ -36,11 +34,6 @@ type Message = {
   email_receiver: string
   message: string
   timestamp: Date
-}
-
-type Program = {
-  id: string
-  name: string
 }
 
 export default function MessageBatchmates() {
@@ -57,8 +50,6 @@ export default function MessageBatchmates() {
   const [canMessage, setCanMessage] = useState(true)
   const [isMobileView, setIsMobileView] = useState(false)
   const [showUserList, setShowUserList] = useState(true)
-  const [programs, setPrograms] = useState<Program[]>([])
-  const [selectedProgram, setSelectedProgram] = useState<string>("all")
   const [isMessageDialogOpen, setIsMessageDialogOpen] = useState(false)
 
   useEffect(() => {
@@ -74,54 +65,55 @@ export default function MessageBatchmates() {
   }, [])
 
   useEffect(() => {
-    const fetchPrograms = async () => {
-      try {
-        const response = await fetch("/api/programs")
-        if (response.ok) {
-          const data = await response.json()
-          setPrograms(data)
-        }
-      } catch (error) {
-        console.error("Error fetching programs:", error)
-        // For demo purposes, set some sample programs
-        setPrograms([
-          { id: "cs", name: "Computer Science" },
-          { id: "business", name: "Business Administration" },
-          { id: "engineering", name: "Engineering" },
-        ])
-      }
-    }
-
-    fetchPrograms()
-  }, [])
-
-  useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await fetch("/api/users")
+        const response = await fetch("/api/users");
         if (response.ok) {
-          const data = await response.json()
-          // Add sample program, quote and profile picture for demo
-          const enhancedData = data.map((user: User) => ({
-            ...user,
-            program: user.program || ["cs", "business", "engineering"][Math.floor(Math.random() * 3)],
-            quote: user.quote || "This is my yearbook quote that I've submitted for everyone to remember me by.",
-            profilePicture: user.profilePicture || `/placeholder.svg?height=200&width=200`,
-          }))
-          const filteredData = enhancedData.filter((user: User) => user.email !== session?.user?.email)
-          setUsers(filteredData)
-          applyFilters(filteredData, selectedProgram, searchTerm)
+          const data = await response.json();
+          
+          const enhancedUsers = await Promise.all(
+            data.map(async (user: User) => {
+              try {
+                const prefResponse = await fetch(`/api/users/get-preference?email=${encodeURIComponent(user.email)}`);
+                if (prefResponse.ok) {
+                  const prefData = await prefResponse.json();
+                  return {
+                    ...user,
+                    quote: prefData.preferences?.quote || "No quote provided",
+                    profilePicture: prefData.preferences?.photoUrl || `/placeholder.svg?height=200&width=200`,
+                  };
+                }
+                return {
+                  ...user,
+                  quote: "No quote provided",
+                  profilePicture: `/placeholder.svg?height=200&width=200`,
+                };
+              } catch (error) {
+                console.error(`Error fetching preferences for ${user.email}:`, error);
+                return {
+                  ...user,
+                  quote: "No quote provided",
+                  profilePicture: `/placeholder.svg?height=200&width=200`,
+                };
+              }
+            })
+          );
+          
+          const filteredData = enhancedUsers.filter((user: User) => user.email !== session?.user?.email);
+          setUsers(filteredData);
+          applyFilters(filteredData, searchTerm);
         }
       } catch (error) {
-        console.error("Error fetching users:", error)
-        sonnerToast.error("Failed to fetch users")
+        console.error("Error fetching users:", error);
+        sonnerToast.error("Failed to fetch users");
       }
-    }
-
+    };
+  
     if (session) {
-      fetchUsers()
+      fetchUsers();
     }
-  }, [session])
+  }, [session]);
+  
 
   useEffect(() => {
     const fetchMessagesAndCheckStatus = async () => {
@@ -138,7 +130,7 @@ export default function MessageBatchmates() {
             receiver: selectedUser.email,
           }),
         })
-
+        
         if (response.ok) {
           const data = await response.json()
           setMessages(data.messages)
@@ -153,19 +145,14 @@ export default function MessageBatchmates() {
     fetchMessagesAndCheckStatus()
   }, [selectedUser, session])
 
-  const applyFilters = (userList: User[], program: string, search: string) => {
+  const applyFilters = (userList: User[], search: string) => {
     let result = [...userList]
-
-    // Filter by program
-    if (program && program !== "all") {
-      result = result.filter((user) => user.program === program)
-    }
 
     // Filter by search term
     if (search) {
       const term = search.toLowerCase()
       result = result.filter(
-        (user) => user.name.toLowerCase().includes(term) || user.email.toLowerCase().includes(term),
+        (user) => user.name.toLowerCase().includes(term) || user.email.toLowerCase().includes(term)
       )
     }
 
@@ -175,12 +162,7 @@ export default function MessageBatchmates() {
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const term = e.target.value.toLowerCase()
     setSearchTerm(term)
-    applyFilters(users, selectedProgram, term)
-  }
-
-  const handleProgramChange = (value: string) => {
-    setSelectedProgram(value)
-    applyFilters(users, value, searchTerm)
+    applyFilters(users, term)
   }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -286,26 +268,12 @@ export default function MessageBatchmates() {
               <div className="relative w-full">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
                 <Input
-                  placeholder="Search users..."
+                  placeholder="Search by name or email..."
                   className="pl-10 w-full"
                   value={searchTerm}
                   onChange={handleSearch}
                 />
               </div>
-
-              <Select value={selectedProgram} onValueChange={handleProgramChange}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select Program" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Programs</SelectItem>
-                  {programs.map((program) => (
-                    <SelectItem key={program.id} value={program.id}>
-                      {program.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
             </div>
 
             {renderUserCards()}
@@ -381,94 +349,94 @@ export default function MessageBatchmates() {
           </div>
         )}
 
-<Dialog 
-  open={isMessageDialogOpen} 
-  onOpenChange={(open) => {
-    setIsMessageDialogOpen(open);
-    if (!open) {
-      // Reset to user list when dialog is closed
-      setShowUserList(true);
-      setSelectedUser(null);
-    }
-  }}
->
-  <DialogContent className="sm:max-w-md bg-white border border-gray-200 shadow-lg">
-    <DialogHeader>
-      <DialogTitle className="flex items-center gap-2 text-gray-800">
-        <Avatar className="h-8 w-8">
-          <AvatarImage src={selectedUser?.profilePicture} alt={selectedUser?.name} />
-          <AvatarFallback className="bg-blue-100 text-blue-600">
-            {selectedUser?.name
-              ?.split(" ")
-              .map((n) => n[0])
-              .join("")}
-          </AvatarFallback>
-        </Avatar>
-        Message to {selectedUser?.name}
-      </DialogTitle>
-      <DialogDescription className="text-gray-500">
-        This message will appear in their personalised yearbook. You can only send one message to each person.
-      </DialogDescription>
-    </DialogHeader>
-
-    <div className="max-h-[200px] overflow-y-auto p-2 border border-gray-200 rounded-md bg-white">
-      {messages.length > 0 ? (
-        messages.map((msg, index) => (
-          <div
-            key={index}
-            className={`flex ${msg.email_sender === session?.user?.email ? "justify-end" : "justify-start"} mb-2`}
-          >
-            <div
-              className={`max-w-[70%] p-2 rounded-lg ${
-                msg.email_sender === session?.user?.email 
-                  ? "bg-blue-500 text-white" 
-                  : "bg-gray-200 text-black"
-              }`}
-            >
-              {msg.message}
-            </div>
-          </div>
-        ))
-      ) : (
-        <p className="text-center text-muted-foreground py-4">No messages yet</p>
-      )}
-    </div>
-
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="grid gap-4">
-        <Input
-          placeholder="Type your message..."
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          disabled={!canMessage}
-          className="border-gray-300 bg-white"
-        />
-
-        {!canMessage && (
-          <Alert variant="destructive" className="bg-red-50 border-red-200 text-red-600">
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>You have already sent a message to this user</AlertDescription>
-          </Alert>
-        )}
-      </div>
-
-      <DialogFooter className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
-        <DialogClose asChild>
-          <Button type="button" variant="outline" className="w-full sm:w-auto">
-            Cancel
-          </Button>
-        </DialogClose>
-        <Button 
-          type="submit" 
-          disabled={isSubmitting || !message || !canMessage} 
-          className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white"
+        <Dialog 
+          open={isMessageDialogOpen} 
+          onOpenChange={(open) => {
+            setIsMessageDialogOpen(open);
+            if (!open) {
+              // Reset to user list when dialog is closed
+              setShowUserList(true);
+              setSelectedUser(null);
+            }
+          }}
         >
-          Send Message
-        </Button>
-      </DialogFooter>
-    </form>
-  </DialogContent>
-</Dialog>
+          <DialogContent className="sm:max-w-md bg-white border border-gray-200 shadow-lg">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2 text-gray-800">
+                <Avatar className="h-8 w-8">
+                  <AvatarImage src={selectedUser?.profilePicture} alt={selectedUser?.name} />
+                  <AvatarFallback className="bg-blue-100 text-blue-600">
+                    {selectedUser?.name
+                      ?.split(" ")
+                      .map((n) => n[0])
+                      .join("")}
+                  </AvatarFallback>
+                </Avatar>
+                Message to {selectedUser?.name}
+              </DialogTitle>
+              <DialogDescription className="text-gray-500">
+                This message will appear in their personalised yearbook. You can only send one message to each person.
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="max-h-[200px] overflow-y-auto p-2 border border-gray-200 rounded-md bg-white">
+              {messages.length > 0 ? (
+                messages.map((msg, index) => (
+                  <div
+                    key={index}
+                    className={`flex ${msg.email_sender === session?.user?.email ? "justify-end" : "justify-start"} mb-2`}
+                  >
+                    <div
+                      className={`max-w-[70%] p-2 rounded-lg ${
+                        msg.email_sender === session?.user?.email 
+                          ? "bg-blue-500 text-white" 
+                          : "bg-gray-200 text-black"
+                      }`}
+                    >
+                      {msg.message}
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p className="text-center text-muted-foreground py-4">No messages yet</p>
+              )}
+            </div>
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid gap-4">
+                <Input
+                  placeholder="Type your message..."
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  disabled={!canMessage}
+                  className="border-gray-300 bg-white"
+                />
+
+                {!canMessage && (
+                  <Alert variant="destructive" className="bg-red-50 border-red-200 text-red-600">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>You have already sent a message to this user</AlertDescription>
+                  </Alert>
+                )}
+              </div>
+
+              <DialogFooter className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
+                <DialogClose asChild>
+                  <Button type="button" variant="outline" className="w-full sm:w-auto">
+                    Cancel
+                  </Button>
+                </DialogClose>
+                <Button 
+                  type="submit" 
+                  disabled={isSubmitting || !message || !canMessage} 
+                  className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  Send Message
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
       </div>
     )
   }
@@ -477,30 +445,14 @@ export default function MessageBatchmates() {
     <div className="flex flex-col h-full">
       <h2 className="text-2xl font-bold text-blue-600 mb-6">A Final Adieu</h2>
       <div className="p-4 flex flex-col gap-4">
-        <div className="flex flex-col sm:flex-row gap-4">
-          <div className="relative flex-grow">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-            <Input
-              placeholder="Search users..."
-              className="pl-10 w-full"
-              value={searchTerm}
-              onChange={handleSearch}
-            />
-          </div>
-
-          <Select value={selectedProgram} onValueChange={handleProgramChange}>
-            <SelectTrigger className="w-full sm:w-[200px]">
-              <SelectValue placeholder="Select Program" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Programs</SelectItem>
-              {programs.map((program) => (
-                <SelectItem key={program.id} value={program.id}>
-                  {program.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        <div className="relative w-full">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+          <Input
+            placeholder="Search by name or email..."
+            className="pl-10 w-full"
+            value={searchTerm}
+            onChange={handleSearch}
+          />
         </div>
 
         {renderUserCards()}
@@ -548,6 +500,8 @@ export default function MessageBatchmates() {
               <p className="text-center text-muted-foreground py-4">No messages yet</p>
             )}
           </div>
+
+
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid gap-4">

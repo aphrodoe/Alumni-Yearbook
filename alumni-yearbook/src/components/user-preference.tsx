@@ -3,28 +3,26 @@
 import React, { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
-import { Upload, Quote, CheckCircle } from "lucide-react"
+import { Upload, Quote, CheckCircle, ChevronLeft, ChevronRight, Check } from "lucide-react"
 import { getSession } from "next-auth/react"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Progress } from "@/components/ui/progress"
+import { Card, CardContent } from "@/components/ui/card"
+import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 export default function UserPreferenceForm() {
   const router = useRouter()
   const [step, setStep] = useState(1)
-  const totalSteps = 5
-  const progress = (step / totalSteps) * 100
+  const totalSteps = 4
 
   const [formData, setFormData] = useState({
     photo: null as File | null,
     photoPreview: "",
     quote: "",
-    step3Data: "",
-    step4Data: "",
-    step5Data: "",
+    clubs: "",
   })
 
   // Check if user has already completed preferences
@@ -77,39 +75,55 @@ export default function UserPreferenceForm() {
     })
   }
 
+  const handleSelectChange = (name: string, value: string) => {
+    setFormData((prev) => ({ ...prev, [name]: value }))
+  }
+
   const handleNext = () => {
     if (step < totalSteps) {
       setStep(step + 1);
     } else {
-      fetch('/api/users/update-preference', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Cache-Control': 'no-cache',
-          'Pragma': 'no-cache'
-        },
-        body: JSON.stringify({
-          photoUrl: formData.photoPreview,
-          quote: formData.quote,
-        }),
-        credentials: 'include' 
-      })
-      .then(async response => {
-        if (response.ok) {
-          console.log("Preferences updated successfully");
-          setTimeout(() => {
-            router.push('/dashboard');
-          }, 500);
-        } else {
-          const errorData = await response.json();
-          console.error('Failed to update preferences:', errorData);
-        }
-      })
-      .catch(error => {
-        console.error('Error updating preferences:', error);
-      });
+      // Convert the image to base64 if it exists
+      if (formData.photo) {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          // Now send the base64 string to the server
+          fetch('/api/users/update-preference', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Cache-Control': 'no-cache',
+              'Pragma': 'no-cache'
+            },
+            body: JSON.stringify({
+              photoUrl: reader.result, // This will be a base64 string
+              quote: formData.quote,
+              clubs: formData.clubs,
+            }),
+            credentials: 'include' 
+          })
+          .then(async response => {
+            if (response.ok) {
+              console.log("Preferences updated successfully");
+              setTimeout(() => {
+                router.push('/dashboard');
+              }, 500);
+            } else {
+              const errorData = await response.json();
+              console.error('Failed to update preferences:', errorData);
+            }
+          })
+          .catch(error => {
+            console.error('Error updating preferences:', error);
+          });
+        };
+        reader.readAsDataURL(formData.photo);
+      } else {
+        console.error('No photo selected');
+      }
     }
   };
+  
 
   const handleBack = () => {
     if (step > 1) {
@@ -124,11 +138,9 @@ export default function UserPreferenceForm() {
       case 2:
         return !!formData.quote
       case 3:
-        return !!formData.step3Data
+        return !!formData.clubs
       case 4:
-        return !!formData.step4Data
-      case 5:
-        return !!formData.step5Data
+        return true
       default:
         return false
     }
@@ -136,20 +148,35 @@ export default function UserPreferenceForm() {
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-background p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle>Complete Your Profile</CardTitle>
-          <CardDescription>
-            Step {step} of {totalSteps}: {step === 1 ? "Upload Photo" : step === 2 ? "Add Quote" : `Step ${step}`}
-          </CardDescription>
-          <Progress value={progress} className="h-2 mt-2" />
-        </CardHeader>
-        <CardContent>
+      <Card className="max-w-2xl mx-auto border-blue-200 bg-white shadow-lg">
+        <CardContent className="pt-6">
+          <div className="flex justify-between mb-6">
+            <div
+              className={`h-2 w-1/5 rounded-full ${step >= 1 ? "bg-blue-600" : "bg-gray-200"} transition-colors duration-300 mr-1`}
+            ></div>
+            <div
+              className={`h-2 w-1/5 rounded-full ${step >= 2 ? "bg-blue-600" : "bg-gray-200"} transition-colors duration-300 mr-1`}
+            ></div>
+            <div
+              className={`h-2 w-1/5 rounded-full ${step >= 3 ? "bg-blue-600" : "bg-gray-200"} transition-colors duration-300 mr-1`}
+            ></div>
+            <div
+              className={`h-2 w-1/5 rounded-full ${step >= 4 ? "bg-blue-600" : "bg-gray-200"} transition-colors duration-300`}
+            ></div>
+          </div>
+
+          <h2 className="text-xl font-semibold text-blue-600 mb-4">
+            {step === 1 ? "Upload Photo" : 
+             step === 2 ? "Your Quote" : 
+             step === 3 ? "Extracurricular Activities" : 
+             "Review & Submit"}
+          </h2>
+
           {step === 1 && (
             <div className="space-y-4">
               <div className="flex flex-col items-center justify-center">
                 {formData.photoPreview ? (
-                  <div className="relative w-32 h-32 rounded-full overflow-hidden mb-4">
+                  <div className="relative w-40 h-40 rounded-full overflow-hidden mb-4 border-4 border-blue-200 shadow-lg">
                     <Image
                       src={formData.photoPreview || "/placeholder.svg"}
                       alt="Profile preview"
@@ -158,12 +185,12 @@ export default function UserPreferenceForm() {
                     />
                   </div>
                 ) : (
-                  <div className="w-32 h-32 rounded-full bg-muted flex items-center justify-center mb-4">
-                    <Upload className="h-10 w-10 text-muted-foreground" />
+                  <div className="w-40 h-40 rounded-full bg-blue-50 flex items-center justify-center mb-4 border-4 border-blue-200 shadow-lg">
+                    <Upload className="h-12 w-12 text-blue-400" />
                   </div>
                 )}
-                <label htmlFor="photo-upload" className="cursor-pointer">
-                  <div className="flex items-center gap-2 text-primary">
+                <label htmlFor="photo-upload" className="cursor-pointer mt-4">
+                  <div className="flex items-center gap-2 text-blue-600 bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-full transition-colors">
                     <Upload className="h-4 w-4" />
                     <span>{formData.photo ? "Change photo" : "Upload your photo"}</span>
                   </div>
@@ -175,85 +202,125 @@ export default function UserPreferenceForm() {
                     onChange={handlePhotoChange}
                   />
                 </label>
+                <p className="text-sm text-gray-500 mt-4 text-center max-w-md">
+                  Upload a high-quality photo for your yearbook profile. This will be visible to other students.
+                </p>
               </div>
             </div>
           )}
 
           {step === 2 && (
             <div className="space-y-4">
-              <div className="flex items-center gap-2 mb-2">
-                <Quote className="h-5 w-5 text-primary" />
-                <h3 className="text-lg font-medium">Your Quote</h3>
+              <div className="flex items-center gap-2 mb-4">
+                <Quote className="h-5 w-5 text-blue-600" />
+                <Label htmlFor="quote" className="text-lg font-medium">Your Yearbook Quote</Label>
               </div>
               <Textarea
+                id="quote"
                 name="quote"
                 value={formData.quote}
                 onChange={handleInputChange}
-                placeholder="This quote will be in your yearbook and visible to others"
-                className="min-h-[120px]"
+                placeholder="Share a memorable quote that represents your journey..."
+                className="min-h-[150px] bg-white border-gray-300"
               />
+              <p className="text-sm text-gray-500">
+                This quote will appear in your yearbook profile and be visible to your classmates. 
+                Make it meaningful and representative of your time at the institution. Or just a funny one!
+              </p>
             </div>
           )}
 
+
           {step === 3 && (
             <div className="space-y-4">
-              <h3 className="text-lg font-medium">Step 3</h3>
-              <Input
-                name="step3Data"
-                value={formData.step3Data}
-                onChange={handleInputChange}
-                placeholder="Enter information for step 3..."
-              />
-              <p className="text-sm text-muted-foreground">
-                This is a placeholder for step 3. You can customize this question later.
+              <div className="space-y-2">
+                <Label htmlFor="clubs">Clubs & Activities</Label>
+                <Textarea
+                  id="clubs"
+                  name="clubs"
+                  value={formData.clubs}
+                  onChange={handleInputChange}
+                  placeholder="List your clubs, activities, sports teams, and other extracurricular involvements..."
+                  className="min-h-[150px] bg-white border-gray-300"
+                />
+              </div>
+              <p className="text-sm text-gray-500">
+                Share the extracurricular activities that made your time at school memorable. 
+                Leave a message for any club/society you were part of.
               </p>
             </div>
           )}
 
           {step === 4 && (
-            <div className="space-y-4">
-              <h3 className="text-lg font-medium">Step 4</h3>
-              <Input
-                name="step4Data"
-                value={formData.step4Data}
-                onChange={handleInputChange}
-                placeholder="Enter information for step 4..."
-              />
-              <p className="text-sm text-muted-foreground">
-                This is a placeholder for step 4. You can customize this question later.
-              </p>
+            <div className="space-y-6">
+              <div className="bg-blue-50 p-4 rounded-lg">
+                <h3 className="font-medium text-blue-800 mb-2">Review Your Information</h3>
+                <p className="text-sm text-gray-700">
+                  Please review the information you've provided. Once submitted, this information will be 
+                  used in your yearbook profile and will be visible to other students.
+                </p>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <h4 className="font-medium text-gray-700">Photo</h4>
+                  {formData.photoPreview ? (
+                    <div className="relative w-20 h-20 rounded-full overflow-hidden mt-1">
+                      <Image
+                        src={formData.photoPreview}
+                        alt="Profile"
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                  ) : <p className="text-sm text-red-500">No photo uploaded</p>}
+                </div>
+                
+                <div>
+                  <h4 className="font-medium text-gray-700">Quote</h4>
+                  <p className="text-sm text-gray-600 mt-1">{formData.quote || "No quote provided"}</p>
+                </div>
+              </div>
+              
+              
+              <div className="space-y-2">
+                <h4 className="font-medium text-gray-700">Extracurricular Activities</h4>
+                <p className="text-sm text-gray-600">{formData.clubs || "No activities specified"}</p>
+              </div>
             </div>
           )}
 
-          {step === 5 && (
-            <div className="space-y-4">
-              <h3 className="text-lg font-medium">Step 5</h3>
-              <Input
-                name="step5Data"
-                value={formData.step5Data}
-                onChange={handleInputChange}
-                placeholder="Enter information for step 5..."
-              />
-              <p className="text-sm text-muted-foreground">
-                This is a placeholder for step 5. You can customize this question later.
-              </p>
-            </div>
-          )}
-        </CardContent>
-        <CardFooter className="flex justify-between">
-          <Button variant="outline" onClick={handleBack} disabled={step === 1}>
-            Back
-          </Button>
-          <Button onClick={handleNext} disabled={!isStepComplete()}>
-            {step === totalSteps ? (
-              <span className="flex items-center gap-2">
-                Complete <CheckCircle className="h-4 w-4" />
-              </span>
+          <div className="flex justify-between mt-6">
+            {step > 1 ? (
+              <Button
+                type="button"
+                onClick={handleBack}
+                variant="outline"
+                className="border-blue-200 text-blue-600 hover:bg-blue-50"
+              >
+                <ChevronLeft className="mr-2 h-4 w-4" /> Back
+              </Button>
             ) : (
-              "Next"
+              <div></div>
             )}
-          </Button>
-        </CardFooter>
+
+            <Button 
+              onClick={handleNext} 
+              disabled={!isStepComplete()}
+              className="bg-blue-600 hover:bg-blue-700 text-white disabled:bg-blue-300"
+            >
+              {step === totalSteps ? (
+                <span className="flex items-center gap-2">
+                  Submit <Check className="ml-2 h-4 w-4" />
+                </span>
+              ) : (
+                <span className="flex items-center gap-2">
+                  Next <ChevronRight className="ml-2 h-4 w-4" />
+                </span>
+              )}
+            </Button>
+          </div>
+        </CardContent>
       </Card>
     </div>
   )
