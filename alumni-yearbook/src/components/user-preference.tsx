@@ -183,13 +183,13 @@ export default function UserPreferenceForm() {
             <div className="space-y-4">
               <div className="flex items-center gap-2 mb-2">
                 <Quote className="h-5 w-5 text-primary" />
-                <h3 className="text-lg font-medium">Your Favorite Quote</h3>
+                <h3 className="text-lg font-medium">Your Quote</h3>
               </div>
               <Textarea
                 name="quote"
                 value={formData.quote}
                 onChange={handleInputChange}
-                placeholder="Enter a quote that inspires you..."
+                placeholder="This quote will be in your yearbook and visible to others"
                 className="min-h-[120px]"
               />
             </div>

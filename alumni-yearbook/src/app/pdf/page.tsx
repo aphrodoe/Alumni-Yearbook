@@ -1,15 +1,20 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import PDFViewer from "@/components/PDFViewer";
 
-interface PDFPageProps {
-  fileLocation?: string;
-}
+export default function PDFViewerPage() {
+  const router = useRouter();
+  const query = new URLSearchParams(window.location.search);
+  const fileLocation = query.get("fileLocation");
 
-export default function PDFPage({ fileLocation = "/YEARBOOK_BATCH_2024.pdf" }: PDFPageProps) {
+  if (!fileLocation) {
+    return <div>No PDF file specified.</div>;
+  }
+
   return (
-    <div className="container mx-auto py-10">
-      <PDFViewer fileLocation={fileLocation} /> 
+    <div className="h-screen">
+      <PDFViewer fileLocation={fileLocation} />
     </div>
   );
 }

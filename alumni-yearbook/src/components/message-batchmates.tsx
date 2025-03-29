@@ -1,13 +1,8 @@
 "use client"
 
 import type React from "react"
-
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
-import { AppSidebar } from "@/components/app-sidebar"
-import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage } from "@/components/ui/breadcrumb"
-import { Separator } from "@/components/ui/separator"
-import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import { useEffect, useState } from "react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -48,7 +43,7 @@ type Program = {
   name: string
 }
 
-export default function MessageBatchmate() {
+export default function MessageBatchmates() {
   const { data: session, status } = useSession()
   const router = useRouter()
 
@@ -81,7 +76,6 @@ export default function MessageBatchmate() {
   useEffect(() => {
     const fetchPrograms = async () => {
       try {
-        // This would be replaced with your actual API endpoint
         const response = await fetch("/api/programs")
         if (response.ok) {
           const data = await response.json()
@@ -251,20 +245,6 @@ export default function MessageBatchmate() {
     setSelectedUser(null)
   }
 
-  useEffect(() => {
-    if (status === "unauthenticated") {
-      router.push("/api/auth/error")
-    }
-  }, [status, router])
-
-  if (status === "loading") {
-    return <div>Loading...</div>
-  }
-
-  if (!session) {
-    return null
-  }
-
   const renderUserCards = () => (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-4">
       {filteredUsers.map((user) => (
@@ -298,208 +278,241 @@ export default function MessageBatchmate() {
 
   if (isMobileView) {
     return (
-      <SidebarProvider>
-        <div className="flex flex-col h-screen w-full">
-          <header className="flex items-center justify-between p-4 bg-white shadow-sm w-full">
-            <div className="flex items-center w-full">
-              <SidebarTrigger className="mr-3" />
-              <h1 className="text-xl font-semibold">Message Batchmates</h1>
-            </div>
-          </header>
-
-          {showUserList ? (
-            <div className="flex-grow overflow-y-auto w-full">
-              <div className="p-4 w-full space-y-4">
-                <div className="relative w-full">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-                  <Input
-                    placeholder="Search users..."
-                    className="pl-10 w-full"
-                    value={searchTerm}
-                    onChange={handleSearch}
-                  />
-                </div>
-
-                <Select value={selectedProgram} onValueChange={handleProgramChange}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select Program" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Programs</SelectItem>
-                    {programs.map((program) => (
-                      <SelectItem key={program.id} value={program.id}>
-                        {program.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+      <div className="flex flex-col h-full w-full">
+        <h2 className="text-2xl font-bold text-blue-600 mb-6 pt-6">A Final Adieu</h2>
+        {showUserList ? (
+          <div className="flex-grow overflow-y-auto w-full">
+            <div className="p-4 w-full space-y-4">
+              <div className="relative w-full">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                <Input
+                  placeholder="Search users..."
+                  className="pl-10 w-full"
+                  value={searchTerm}
+                  onChange={handleSearch}
+                />
               </div>
 
-              {renderUserCards()}
+              <Select value={selectedProgram} onValueChange={handleProgramChange}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select Program" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Programs</SelectItem>
+                  {programs.map((program) => (
+                    <SelectItem key={program.id} value={program.id}>
+                      {program.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
-          ) : (
-            <div className="flex flex-col h-full w-full">
-              <header className="flex items-center p-4 bg-white shadow-sm w-full">
-                <Button variant="ghost" size="icon" className="mr-2" onClick={handleBackToUserList}>
-                  <ArrowLeft size={24} />
-                </Button>
-                <Avatar className="mr-3">
-                  <AvatarImage src={selectedUser?.profilePicture} alt={selectedUser?.name} />
-                  <AvatarFallback>
-                    {selectedUser?.name
-                      .split(" ")
-                      .map((n) => n[0])
-                      .join("")}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="overflow-hidden">
-                  <div className="font-semibold truncate">{selectedUser?.name}</div>
-                  <div className="text-sm text-gray-500 truncate">{selectedUser?.email}</div>
-                </div>
-              </header>
 
-              <div className="p-4 w-full">
-                <Alert className="w-full">
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertDescription>
-                    You can message a person once. This message will appear in their personalised yearbook.
-                  </AlertDescription>
-                </Alert>
+            {renderUserCards()}
+          </div>
+        ) : (
+          <div className="flex flex-col h-full w-full">
+            <header className="flex items-center p-4 bg-white shadow-sm w-full">
+              <Button variant="ghost" size="icon" className="mr-2" onClick={handleBackToUserList}>
+                <ArrowLeft size={24} />
+              </Button>
+              <Avatar className="mr-3">
+                <AvatarImage src={selectedUser?.profilePicture} alt={selectedUser?.name} />
+                <AvatarFallback>
+                  {selectedUser?.name
+                    .split(" ")
+                    .map((n) => n[0])
+                    .join("")}
+                </AvatarFallback>
+              </Avatar>
+              <div className="overflow-hidden">
+                <div className="font-semibold truncate">{selectedUser?.name}</div>
+                <div className="text-sm text-gray-500 truncate">{selectedUser?.email}</div>
               </div>
+            </header>
 
-              <div className="flex-grow overflow-y-auto p-4 space-y-2 w-full">
-                {messages.map((msg, index) => (
+            <div className="p-4 w-full">
+              <Alert className="w-full">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  You can message a person once. This message will appear in their personalised yearbook.
+                </AlertDescription>
+              </Alert>
+            </div>
+
+            <div className="flex-grow overflow-y-auto p-4 space-y-2 w-full">
+              {messages.map((msg, index) => (
+                <div
+                  key={index}
+                  className={`flex ${msg.email_sender === session?.user?.email ? "justify-end" : "justify-start"} w-full`}
+                >
                   <div
-                    key={index}
-                    className={`flex ${msg.email_sender === session.user?.email ? "justify-end" : "justify-start"} w-full`}
+                    className={`max-w-[70%] p-2 rounded-lg ${
+                      msg.email_sender === session?.user?.email ? "bg-blue-500 text-white" : "bg-gray-200 text-black"
+                    }`}
                   >
-                    <div
-                      className={`max-w-[70%] p-2 rounded-lg ${
-                        msg.email_sender === session.user?.email ? "bg-blue-500 text-white" : "bg-gray-200 text-black"
-                      }`}
-                    >
-                      {msg.message}
-                    </div>
+                    {msg.message}
                   </div>
-                ))}
-              </div>
-
-              <form onSubmit={handleSubmit} className="p-4 border-t bg-white w-full">
-                <div className="flex items-center w-full">
-                  <Input
-                    placeholder="Type a message"
-                    value={message}
-                    onChange={(e) => setMessage(e.target.value)}
-                    className="flex-grow mr-2"
-                    disabled={!canMessage}
-                  />
-                  <Button
-                    type="submit"
-                    disabled={isSubmitting || !message || !canMessage}
-                    className="flex items-center justify-center"
-                  >
-                    <Send size={20} />
-                  </Button>
                 </div>
-                {!canMessage && (
-                  <p className="text-sm text-red-500 mt-2">You have already sent a message to this user</p>
-                )}
-              </form>
+              ))}
             </div>
-          )}
-        </div>
-        <AppSidebar />
 
-        <Dialog open={isMessageDialogOpen && !showUserList} onOpenChange={setIsMessageDialogOpen}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Message to {selectedUser?.name}</DialogTitle>
-              <DialogDescription>
-                This message will appear in their personalised yearbook. You can only send one message to each person.
-              </DialogDescription>
-            </DialogHeader>
-
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <Input
-                placeholder="Type your message..."
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                disabled={!canMessage}
-              />
-
-              {!canMessage && <p className="text-sm text-red-500">You have already sent a message to this user</p>}
-
-              <DialogFooter>
-                <DialogClose asChild>
-                  <Button variant="outline" type="button">
-                    Cancel
-                  </Button>
-                </DialogClose>
-                <Button type="submit" disabled={isSubmitting || !message || !canMessage}>
-                  Send Message
+            <form onSubmit={handleSubmit} className="p-4 border-t bg-white w-full">
+              <div className="flex items-center w-full">
+                <Input
+                  placeholder="Type a message"
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  className="flex-grow mr-2"
+                  disabled={!canMessage}
+                />
+                <Button
+                  type="submit"
+                  disabled={isSubmitting || !message || !canMessage}
+                  className="flex items-center justify-center"
+                >
+                  <Send size={20} />
                 </Button>
-              </DialogFooter>
+              </div>
+              {!canMessage && (
+                <p className="text-sm text-red-500 mt-2">You have already sent a message to this user</p>
+              )}
             </form>
-          </DialogContent>
-        </Dialog>
-      </SidebarProvider>
+          </div>
+        )}
+
+<Dialog 
+  open={isMessageDialogOpen} 
+  onOpenChange={(open) => {
+    setIsMessageDialogOpen(open);
+    if (!open) {
+      // Reset to user list when dialog is closed
+      setShowUserList(true);
+      setSelectedUser(null);
+    }
+  }}
+>
+  <DialogContent className="sm:max-w-md bg-white border border-gray-200 shadow-lg">
+    <DialogHeader>
+      <DialogTitle className="flex items-center gap-2 text-gray-800">
+        <Avatar className="h-8 w-8">
+          <AvatarImage src={selectedUser?.profilePicture} alt={selectedUser?.name} />
+          <AvatarFallback className="bg-blue-100 text-blue-600">
+            {selectedUser?.name
+              ?.split(" ")
+              .map((n) => n[0])
+              .join("")}
+          </AvatarFallback>
+        </Avatar>
+        Message to {selectedUser?.name}
+      </DialogTitle>
+      <DialogDescription className="text-gray-500">
+        This message will appear in their personalised yearbook. You can only send one message to each person.
+      </DialogDescription>
+    </DialogHeader>
+
+    <div className="max-h-[200px] overflow-y-auto p-2 border border-gray-200 rounded-md bg-white">
+      {messages.length > 0 ? (
+        messages.map((msg, index) => (
+          <div
+            key={index}
+            className={`flex ${msg.email_sender === session?.user?.email ? "justify-end" : "justify-start"} mb-2`}
+          >
+            <div
+              className={`max-w-[70%] p-2 rounded-lg ${
+                msg.email_sender === session?.user?.email 
+                  ? "bg-blue-500 text-white" 
+                  : "bg-gray-200 text-black"
+              }`}
+            >
+              {msg.message}
+            </div>
+          </div>
+        ))
+      ) : (
+        <p className="text-center text-muted-foreground py-4">No messages yet</p>
+      )}
+    </div>
+
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="grid gap-4">
+        <Input
+          placeholder="Type your message..."
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          disabled={!canMessage}
+          className="border-gray-300 bg-white"
+        />
+
+        {!canMessage && (
+          <Alert variant="destructive" className="bg-red-50 border-red-200 text-red-600">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>You have already sent a message to this user</AlertDescription>
+          </Alert>
+        )}
+      </div>
+
+      <DialogFooter className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
+        <DialogClose asChild>
+          <Button type="button" variant="outline" className="w-full sm:w-auto">
+            Cancel
+          </Button>
+        </DialogClose>
+        <Button 
+          type="submit" 
+          disabled={isSubmitting || !message || !canMessage} 
+          className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white"
+        >
+          Send Message
+        </Button>
+      </DialogFooter>
+    </form>
+  </DialogContent>
+</Dialog>
+      </div>
     )
   }
 
   return (
-    <SidebarProvider>
-      <AppSidebar />
-      <SidebarInset>
-        <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
-          <SidebarTrigger className="-ml-1" />
-          <Separator orientation="vertical" className="mr-2 h-4" />
-          <Breadcrumb>
-            <BreadcrumbList>
-              <BreadcrumbItem>
-                <BreadcrumbPage>Message Batchmates</BreadcrumbPage>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
-        </header>
-
-        <div className="p-4 flex flex-col gap-4">
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="relative flex-grow">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-              <Input
-                placeholder="Search users..."
-                className="pl-10 w-full"
-                value={searchTerm}
-                onChange={handleSearch}
-              />
-            </div>
-
-            <Select value={selectedProgram} onValueChange={handleProgramChange}>
-              <SelectTrigger className="w-full sm:w-[200px]">
-                <SelectValue placeholder="Select Program" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Programs</SelectItem>
-                {programs.map((program) => (
-                  <SelectItem key={program.id} value={program.id}>
-                    {program.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+    <div className="flex flex-col h-full">
+      <h2 className="text-2xl font-bold text-blue-600 mb-6">A Final Adieu</h2>
+      <div className="p-4 flex flex-col gap-4">
+        <div className="flex flex-col sm:flex-row gap-4">
+          <div className="relative flex-grow">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+            <Input
+              placeholder="Search users..."
+              className="pl-10 w-full"
+              value={searchTerm}
+              onChange={handleSearch}
+            />
           </div>
 
-          {renderUserCards()}
+          <Select value={selectedProgram} onValueChange={handleProgramChange}>
+            <SelectTrigger className="w-full sm:w-[200px]">
+              <SelectValue placeholder="Select Program" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Programs</SelectItem>
+              {programs.map((program) => (
+                <SelectItem key={program.id} value={program.id}>
+                  {program.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
-      </SidebarInset>
+
+        {renderUserCards()}
+      </div>
 
       <Dialog open={isMessageDialogOpen} onOpenChange={setIsMessageDialogOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md bg-white border border-gray-200 shadow-lg">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
+            <DialogTitle className="flex items-center gap-2 text-gray-800">
               <Avatar className="h-8 w-8">
                 <AvatarImage src={selectedUser?.profilePicture} alt={selectedUser?.name} />
-                <AvatarFallback>
+                <AvatarFallback className="bg-blue-100 text-blue-600">
                   {selectedUser?.name
                     ?.split(" ")
                     .map((n) => n[0])
@@ -508,21 +521,23 @@ export default function MessageBatchmate() {
               </Avatar>
               Message to {selectedUser?.name}
             </DialogTitle>
-            <DialogDescription>
+            <DialogDescription className="text-gray-500">
               This message will appear in their personalised yearbook. You can only send one message to each person.
             </DialogDescription>
           </DialogHeader>
 
-          <div className="max-h-[200px] overflow-y-auto p-2 border rounded-md">
+          <div className="max-h-[200px] overflow-y-auto p-2 border border-gray-200 rounded-md bg-white">
             {messages.length > 0 ? (
               messages.map((msg, index) => (
                 <div
                   key={index}
-                  className={`flex ${msg.email_sender === session.user?.email ? "justify-end" : "justify-start"} mb-2`}
+                  className={`flex ${msg.email_sender === session?.user?.email ? "justify-end" : "justify-start"} mb-2`}
                 >
                   <div
                     className={`max-w-[70%] p-2 rounded-lg ${
-                      msg.email_sender === session.user?.email ? "bg-blue-500 text-white" : "bg-gray-200 text-black"
+                      msg.email_sender === session?.user?.email 
+                        ? "bg-blue-500 text-white" 
+                        : "bg-gray-200 text-black"
                     }`}
                   >
                     {msg.message}
@@ -541,18 +556,28 @@ export default function MessageBatchmate() {
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 disabled={!canMessage}
+                className="border-gray-300 bg-white"
               />
 
               {!canMessage && (
-                <Alert variant="destructive">
+                <Alert variant="destructive" className="bg-red-50 border-red-200 text-red-600">
                   <AlertCircle className="h-4 w-4" />
                   <AlertDescription>You have already sent a message to this user</AlertDescription>
                 </Alert>
               )}
             </div>
 
-            <DialogFooter>
-              <Button type="submit" disabled={isSubmitting || !message || !canMessage} className="w-full sm:w-auto">
+            <DialogFooter className="flex justify-end space-x-2">
+              <DialogClose asChild>
+                <Button type="button" variant="outline">
+                  Cancel
+                </Button>
+              </DialogClose>
+              <Button 
+                type="submit" 
+                disabled={isSubmitting || !message || !canMessage} 
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+              >
                 Send Message
               </Button>
             </DialogFooter>
@@ -561,6 +586,6 @@ export default function MessageBatchmate() {
       </Dialog>
 
       <Toaster />
-    </SidebarProvider>
+    </div>
   )
 }
