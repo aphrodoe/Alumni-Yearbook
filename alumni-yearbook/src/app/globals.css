@@ -2,125 +2,44 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  :root {
-    --background: 225 6% 13%;
-    --foreground: 210 11% 96%;
-    --card: 228 7% 17%;
-    --card-foreground: 210 11% 96%;
-    --popover: 228 7% 17%;
-    --popover-foreground: 210 11% 96%;
-    --primary: 235 86% 65%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 228 6% 23%;
-    --secondary-foreground: 210 11% 96%;
-    --muted: 228 7% 20%;
-    --muted-foreground: 217 8% 64%;
-    --accent: 235 86% 65%;
-    --accent-foreground: 0 0% 100%;
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 227 6% 21%;
-    --input: 227 6% 21%;
-    --ring: 235 86% 65%;
-    --chart-1: 235 86% 65%;
-    --chart-2: 227 58% 65%;
-    --chart-3: 262 51% 54%;
-    --chart-4: 197 100% 48%;
-    --chart-5: 120 69% 50%;
-    --radius: 0.5rem
+html, body {
+  overscroll-behavior-y: none;
+  overflow-x: hidden;
+  height: 100%;
+}
+
+#progress-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  height: 0;
+  background: transparent;
+}
+
+.mobile-menu-container {
+  -webkit-overflow-scrolling: touch;
+  max-height: 100vh;
+  padding-bottom: env(safe-area-inset-bottom, 20px);
+}
+
+.content-container {
+  -webkit-overflow-scrolling: touch;
+}
+body.overflow-hidden {
+  overflow: hidden;
+  position: fixed;
+  width: 100%;
+  height: 100%;
+}
+
+@supports (padding: max(0px)) {
+  .mobile-menu-container {
+    padding-bottom: max(20px, env(safe-area-inset-bottom));
   }
 }
 
-@layer base {
-  * {
-    @apply border-border;
-  }
-  body {
-    @apply bg-background text-foreground;
-  }
+* {
+  -webkit-tap-highlight-color: transparent;
 }
-
-.fixed.inset-0[role="dialog"] {
-  background-color: rgba(23, 24, 28, 0.8);
-}
-
-[role="listbox"] > div,
-.user-list-item,
-.user-item,
-.search-result {
-  background-color: hsl(228, 7%, 20%) !important;
-}
-
-[role="listbox"] > div:hover,
-.user-list-item:hover,
-.user-item:hover,
-.search-result:hover {
-  background-color: hsl(228, 7%, 25%) !important;
-}
-
-.bg-blue-50,
-.bg-blue-100,
-.bg-slate-50,
-.bg-slate-100,
-.bg-gray-50,
-.bg-gray-100,
-[class*="bg-"][class*="-50"],
-[class*="bg-"][class*="-100"] {
-  background-color: hsl(228, 7%, 20%) !important;
-}
-
-input[type="search"],
-input[placeholder="Search users..."] {
-  background-color: hsl(225, 7%, 20%) !important;
-  color: hsl(210, 11%, 96%) !important;
-  border-color: hsl(227, 6%, 25%) !important;
-}
-
-[data-sidebar="sidebar"] {
-  background-color: hsl(225, 6%, 13%) !important;
-}
-
-.bg-white,
-.bg-background-light {
-  background-color: hsl(225, 6%, 13%) !important;
-}
-
-[data-sidebar="sidebar"] a,
-[data-sidebar="sidebar"] button {
-  color: hsl(210, 11%, 90%) !important;
-}
-
-[data-sidebar="sidebar"] a:hover,
-[data-sidebar="sidebar"] button:hover {
-  background-color: hsl(228, 7%, 20%) !important;
-}
-
-
-[data-sidebar="sidebar"] a[data-state="active"],
-[data-sidebar="sidebar"] button[data-state="active"] {
-  background-color: hsl(228, 7%, 22%) !important;
-  color: hsl(235, 86%, 75%) !important;
-}
-
-[data-sidebar-rail="true"] {
-  background-color: hsl(228, 7%, 12%) !important;
-  border-color: hsl(227, 6%, 18%) !important;
-}
-
-[data-sidebar="sidebar"] .group-[data-state="open"],
-[data-sidebar="sidebar"] h2,
-[data-sidebar="sidebar"] .nav-section {
-  background-color: transparent !important;
-}
-
-[data-sidebar="sidebar"] button[aria-expanded="true"],
-[data-sidebar="sidebar"] button[data-state="open"] {
-  background-color: transparent !important;
-}
-
-[data-sidebar="sidebar"] button[aria-expanded="true"]:hover,
-[data-sidebar="sidebar"] button[data-state="open"]:hover {
-  background-color: hsl(228, 7%, 20%) !important;
-}
-

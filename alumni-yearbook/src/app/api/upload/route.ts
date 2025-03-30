@@ -11,7 +11,7 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-export async function POST(request) {
+export async function POST(request: Request) {
   const session = await getServerSession(authOptions);
   if (!session) {
     return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
@@ -37,7 +37,7 @@ export async function POST(request) {
         });
 
         return new Image({
-          email: session.user.email,
+          email: session.user?.email || '',
           cloudinaryId: uploadResponse.public_id,
           cloudinaryUrl: uploadResponse.secure_url,
           caption: caption,
@@ -54,7 +54,7 @@ export async function POST(request) {
   } catch (error) {
     console.error('Error uploading images:', error);
     return NextResponse.json(
-      { message: 'Error uploading images', error: error.message }, 
+      { message: 'Error uploading images', error: (error as Error).message }, 
       { status: 500 }
     );
   }
