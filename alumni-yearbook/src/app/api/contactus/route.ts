@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import connectToDatabase from '@/lib/mongodb';
-import ContactMessage from '@/models/contact_us_form';
+import ContactMessage from '@/app/models/contact_us';
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "../auth/[...nextauth]/route";
 import emailjs from 'emailjs-com';
