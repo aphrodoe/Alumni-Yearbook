@@ -5,7 +5,7 @@ import path from "path";
 import axios from "axios";
 import dbConnect from '../../../lib/mongodb.js';
 import { v2 as cloudinary } from 'cloudinary';
-import Section from '../../models/Section.js';
+import Section from "@/app/models/Section"
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "../auth/[...nextauth]/route";
 import { NextResponse } from 'next/server';

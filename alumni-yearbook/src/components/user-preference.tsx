@@ -104,6 +104,14 @@ export default function UserPreferenceForm() {
           })
           .then(async response => {
             if (response.ok) {
+              fetch('/api/users/change-preference', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Cache-Control': 'no-cache',
+                  'Pragma': 'no-cache'
+                },
+            })
               console.log("Preferences updated successfully");
               setTimeout(() => {
                 router.push('/dashboard');
