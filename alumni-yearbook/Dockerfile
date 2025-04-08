@@ -36,6 +36,8 @@ WORKDIR /app
 
 # Copy only the standalone output
 COPY --from=builder /app/.next/standalone ./
+RUN ls -l /app
+RUN ls -l /app/.next/standalone
 COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/public ./public
 
