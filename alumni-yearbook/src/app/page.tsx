@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardDescription } from "@/components/ui/card"
 import { signIn } from "next-auth/react"
+import Image from "next/image"
 
 export function LoginForm({
   className,
@@ -13,11 +14,15 @@ export function LoginForm({
     <div className={cn("flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-blue-100 to-blue-600 p-6", className)} {...props}>
       <Card className="w-full max-w-md shadow-2xl border border-blue-300 bg-white rounded-xl">
         <CardHeader className="text-center p-6">
-          <img
-            src="/IITJ_logo.png"
-            alt="IITJ Logo"
-            className="w-32 h-32 object-cover rounded-full mx-auto mb-4 shadow-lg"
-          />
+          <div className="relative w-32 h-32 mx-auto mb-4">
+            <Image
+              src="/IITJ_logo.png"
+              alt="IITJ Logo"
+              fill
+              className="object-cover rounded-full shadow-lg"
+              sizes="(max-width: 768px) 100vw, 33vw"
+            />
+          </div>
           <h2 className="text-2xl font-bold text-blue-900">Welcome to the Yearbook</h2>
           <CardDescription className="text-blue-700 mt-2 text-lg">
             Relive memories, reconnect with friends

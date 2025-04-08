@@ -12,8 +12,6 @@ import {
   X,
   LogOut,
   ChevronDown,
-  Image,
-  Quote,
   User,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"

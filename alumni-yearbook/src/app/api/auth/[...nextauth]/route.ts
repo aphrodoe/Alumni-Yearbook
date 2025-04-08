@@ -13,7 +13,7 @@ export const authOptions: NextAuthOptions = {
   ],
   secret: process.env.NEXTAUTH_SECRET,
   callbacks: {
-    async signIn({ user, account, profile }) {
+    async signIn({ user }) {
       const email = user.email || "";
       const isAllowedEmail = email.startsWith("b24");
       
@@ -40,7 +40,8 @@ export const authOptions: NextAuthOptions = {
     },
     async session({ session, token }) {
       if (session.user) {
-        (session.user as any).id = token.sub;
+        
+        (session.user as { id: string }).id = token.sub || '';
       }
       return session;
     },

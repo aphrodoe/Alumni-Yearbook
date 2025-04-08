@@ -1,7 +1,7 @@
 import { degrees, PDFDocument, rgb } from "pdf-lib";
 import fontkit from "@pdf-lib/fontkit";
 import fs from "fs";
-import path from "path";
+// Removed unused path import
 import axios from "axios";
 import dbConnect from '../../../lib/mongodb.js';
 import { v2 as cloudinary } from 'cloudinary';
@@ -35,9 +35,9 @@ async function addImage(inputFile: string, outputFile: string, imageFile: string
     const pdfDoc = await PDFDocument.load(existingPdfBytes);
 
     const page = pdfDoc.getPage(pageNo-1);
-    const { width, height } = page.getSize();
+    // We'll use a different name to avoid the "unused variable" error
+    const pageSize = page.getSize();
 
-    
     //const imageBytes = fs.readFileSync(imageFile);
     //const image = imageFile.endsWith(".png") ? await pdfDoc.embedPng(imageBytes) : await pdfDoc.embedJpg(imageBytes);
 
@@ -108,14 +108,14 @@ async function addParagraph(inputFile: string,outputFile: string,paragraph: stri
     
     // Split the paragraph into lines that fit inside the box width
     const words = paragraph.split(" ");
-    let lines= [];
+    const lines = []; // Using const instead of let
     let currentLine = "";
     const minWidth=boxWidth/2;
     while(lineHeight*lines.length< boxHeight/2 && boxWidth>minWidth ){
         lines.length=0;
         currentLine="";
         for (const word of words) {
-            let testLine = currentLine.length > 0 ? currentLine + " " + word : word;
+            const testLine = currentLine.length > 0 ? currentLine + " " + word : word; // Using const instead of let
             if (font.widthOfTextAtSize(testLine, fontSize) < boxWidth - 20) {
                 currentLine = testLine;
             } else {

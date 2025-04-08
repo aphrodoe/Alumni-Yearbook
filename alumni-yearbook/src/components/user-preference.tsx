@@ -1,29 +1,28 @@
-"use client"
+"use client";
 
-import React, { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import Image from "next/image"
-import { Upload, Quote, CheckCircle, ChevronLeft, ChevronRight, Check } from "lucide-react"
-import { getSession } from "next-auth/react"
+import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import Image from "next/image";
+import { Upload, Quote, ChevronLeft, ChevronRight, Check } from "lucide-react"; 
+import { getSession } from "next-auth/react";
 
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Card, CardContent } from "@/components/ui/card"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
 
 export default function UserPreferenceForm() {
-  const router = useRouter()
-  const [step, setStep] = useState(1)
-  const totalSteps = 4
+  const router = useRouter();
+  const [step, setStep] = useState(1);
+  const totalSteps = 4;
 
   const [formData, setFormData] = useState({
     photo: null as File | null,
     photoPreview: "",
     quote: "",
     clubs: "",
-  })
+  });
 
   // Check if user has already completed preferences
   useEffect(() => {
@@ -32,15 +31,15 @@ export default function UserPreferenceForm() {
       if (session?.user?.email) {
         try {
           const response = await fetch(`/api/users/check-preferences?email=${session.user.email}`, {
-            cache: 'no-store',
+            cache: "no-store",
             headers: {
-              'Pragma': 'no-cache',
-              'Cache-Control': 'no-cache'
-            }
+              Pragma: "no-cache",
+              "Cache-Control": "no-cache",
+            },
           });
           const data = await response.json();
           console.log("Preference check from form:", data);
-          
+
           if (data.hasCompletedPreferences === true) {
             console.log("User already completed preferences, redirecting to dashboard");
             router.push("/dashboard");
@@ -52,32 +51,28 @@ export default function UserPreferenceForm() {
         console.log("No session found, user may need to login");
       }
     };
-    
+
     checkIfPreferencesCompleted();
   }, [router]);
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0]
+      const file = e.target.files[0];
       setFormData({
         ...formData,
         photo: file,
         photoPreview: URL.createObjectURL(file),
-      })
+      });
     }
-  }
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target
+    const { name, value } = e.target;
     setFormData({
       ...formData,
       [name]: value,
-    })
-  }
-
-  const handleSelectChange = (name: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [name]: value }))
-  }
+    });
+  };
 
   const handleNext = () => {
     if (step < totalSteps) {
@@ -88,96 +83,97 @@ export default function UserPreferenceForm() {
         const reader = new FileReader();
         reader.onloadend = () => {
           // Now send the base64 string to the server
-          fetch('/api/users/update-preference', {
-            method: 'POST',
+          fetch("/api/users/update-preference", {
+            method: "POST",
             headers: {
-              'Content-Type': 'application/json',
-              'Cache-Control': 'no-cache',
-              'Pragma': 'no-cache'
+              "Content-Type": "application/json",
+              "Cache-Control": "no-cache",
+              Pragma: "no-cache",
             },
             body: JSON.stringify({
               photoUrl: reader.result, // This will be a base64 string
               quote: formData.quote,
               clubs: formData.clubs,
             }),
-            credentials: 'include' 
+            credentials: "include",
           })
-          .then(async response => {
-            if (response.ok) {
-              fetch('/api/users/change-preference', {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                  'Cache-Control': 'no-cache',
-                  'Pragma': 'no-cache'
-                },
+            .then(async (response) => {
+              if (response.ok) {
+                fetch("/api/users/change-preference", {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    "Cache-Control": "no-cache",
+                    Pragma: "no-cache",
+                  },
+                });
+                console.log("Preferences updated successfully");
+                setTimeout(() => {
+                  router.push("/dashboard");
+                }, 500);
+              } else {
+                const errorData = await response.json();
+                console.error("Failed to update preferences:", errorData);
+              }
             })
-              console.log("Preferences updated successfully");
-              setTimeout(() => {
-                router.push('/dashboard');
-              }, 500);
-            } else {
-              const errorData = await response.json();
-              console.error('Failed to update preferences:', errorData);
-            }
-          })
-          .catch(error => {
-            console.error('Error updating preferences:', error);
-          });
+            .catch((error) => {
+              console.error("Error updating preferences:", error);
+            });
         };
         reader.readAsDataURL(formData.photo);
       } else {
-        console.error('No photo selected');
+        console.error("No photo selected");
       }
     }
   };
-  
 
   const handleBack = () => {
     if (step > 1) {
-      setStep(step - 1)
+      setStep(step - 1);
     }
-  }
+  };
 
   const isStepComplete = () => {
     switch (step) {
       case 1:
-        return !!formData.photo
+        return !!formData.photo;
       case 2:
-        return !!formData.quote
+        return !!formData.quote;
       case 3:
-        return !!formData.clubs
+        return !!formData.clubs;
       case 4:
-        return true
+        return true;
       default:
-        return false
+        return false;
     }
-  }
+  };
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-background p-4">
       <Card className="max-w-2xl mx-auto border-blue-200 bg-white shadow-lg">
         <CardContent className="pt-6">
           <div className="flex justify-between mb-6">
-            <div
-              className={`h-2 w-1/5 rounded-full ${step >= 1 ? "bg-blue-600" : "bg-gray-200"} transition-colors duration-300 mr-1`}
-            ></div>
-            <div
-              className={`h-2 w-1/5 rounded-full ${step >= 2 ? "bg-blue-600" : "bg-gray-200"} transition-colors duration-300 mr-1`}
-            ></div>
-            <div
-              className={`h-2 w-1/5 rounded-full ${step >= 3 ? "bg-blue-600" : "bg-gray-200"} transition-colors duration-300 mr-1`}
-            ></div>
-            <div
-              className={`h-2 w-1/5 rounded-full ${step >= 4 ? "bg-blue-600" : "bg-gray-200"} transition-colors duration-300`}
-            ></div>
+            {[...Array(totalSteps)].map((_, index) => (
+              <div
+                key={index}
+                className={`h-2 w-1/5 rounded-full ${
+                  step >= index + 1 ? "bg-blue-600" : "bg-gray-200"
+                } transition-colors duration-300 ${
+                  index !== totalSteps - 1 ? "mr-1" : ""
+                }`}
+              ></div>
+            ))}
           </div>
 
+
           <h2 className="text-xl font-semibold text-blue-600 mb-4">
-            {step === 1 ? "Upload Photo" : 
-             step === 2 ? "Your Quote" : 
-             step === 3 ? "Extracurricular Activities" : 
-             "Review & Submit"}
+            {step === 1
+              ? "Upload Photo"
+              : step === 2
+              ? "Your Quote"
+              : step === 3
+              ? "Extracurricular Activities"
+              : "Review & Submit"}
           </h2>
 
           {step === 1 && (

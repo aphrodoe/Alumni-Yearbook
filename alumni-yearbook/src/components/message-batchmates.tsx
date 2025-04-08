@@ -37,9 +37,9 @@ type Message = {
 }
 
 export default function MessageBatchmates() {
-  const { data: session, status } = useSession()
-  const router = useRouter()
-
+  const { data: session } = useSession()
+  // Remove the unused variables
+  
   const [users, setUsers] = useState<User[]>([])
   const [filteredUsers, setFilteredUsers] = useState<User[]>([])
   const [selectedUser, setSelectedUser] = useState<User | null>(null)
@@ -159,6 +159,10 @@ export default function MessageBatchmates() {
     setFilteredUsers(result)
   }
 
+  useEffect(() => {
+    applyFilters(users, searchTerm);
+  }, [users, searchTerm]);
+
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const term = e.target.value.toLowerCase()
     setSearchTerm(term)
@@ -245,7 +249,7 @@ export default function MessageBatchmates() {
           <CardContent className="p-4">
             <h3 className="font-semibold text-lg truncate">{user.name}</h3>
             <p className="text-sm text-muted-foreground truncate">{user.email}</p>
-            <p className="mt-2 text-sm italic line-clamp-3">"{user.quote}"</p>
+            <p className="mt-2 text-sm italic line-clamp-3">&ldquo;{user.quote}&rdquo;</p>
           </CardContent>
           <CardFooter className="p-4 pt-0">
             <Button variant="outline" className="w-full flex items-center gap-2" onClick={() => handleUserSelect(user)}>

@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Upload, X, Check, FileText, MessageSquare } from "lucide-react"
+import Image from "next/image"
 
 interface ImageType {
   _id: string;
@@ -20,6 +21,25 @@ interface ImageType {
 interface Message {
   email_sender: string;
   message: string;
+  timestamp?: string;
+}
+
+interface FormattedMessage {
+  formatted_message: string;
+}
+
+interface MessageData {
+  senderName: string;
+  senderEmail: string;
+  messages: {
+    text: string;
+    timestamp: string;
+  }[];
+}
+
+interface UserMapping {
+  email: string;
+  name: string;
 }
 
 export default function ImageUploader() {
@@ -30,8 +50,6 @@ export default function ImageUploader() {
   const [caption, setCaption] = useState('')
   const [isUploading, setIsUploading] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
-  const [images, setImages] = useState<ImageType[]>([])
-  const [isLoading, setIsLoading] = useState(false)
   const [isGeneratingMessagesPDF, setIsGeneratingMessagesPDF] = useState(false)
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false)
 
@@ -42,19 +60,14 @@ export default function ImageUploader() {
   }, [session])
 
   const fetchImages = async () => {
-    setIsLoading(true)
     try {
       const response = await fetch('/api/images/get/')
       const data = await response.json()
-      if (response.ok) {
-        setImages(data.images || [])
-      } else {
+      if (!response.ok) {
         toast.error("Error", { description: data.message || "Failed to load images" })
       }
-    } catch (error) {
+    } catch {
       toast.error("Error", { description: "Failed to fetch images" })
-    } finally {
-      setIsLoading(false)
     }
   }
 
@@ -123,7 +136,7 @@ export default function ImageUploader() {
       } else {
         toast.error("Upload Failed", { description: data.message || "Failed to upload images" })
       }
-    } catch (error) {
+    } catch {
       toast.error("Error", { description: "An error occurred while uploading images." })
     } finally {
       setIsUploading(false)
@@ -145,7 +158,7 @@ export default function ImageUploader() {
       const images = await imageResponse.json()
       const sections = await sectionResponse.json()
   
-      let formattedMessages: { formatted_message: string }[] = []
+      const formattedMessages: FormattedMessage[] = []
   
       if (session && session.user?.email) {
         const email = encodeURIComponent(session.user.email)
@@ -170,13 +183,15 @@ export default function ImageUploader() {
   
           const userMapping = await Promise.all(userFetchPromises)
           const userMap: Record<string, string> = Object.fromEntries(
-            userMapping.map((user) => [user.email, user.name])
+            userMapping.map((user: UserMapping) => [user.email, user.name])
           )
   
           // Format messages
-          formattedMessages = messages.map((msg: any) => ({
-            formatted_message: `Message: ${msg.message}  From: ${userMap[msg.email_sender] || "Unknown"}`,
-          }))
+          messages.forEach((msg: Message) => {
+            formattedMessages.push({
+              formatted_message: `Message: ${msg.message}  From: ${userMap[msg.email_sender] || "Unknown"}`,
+            });
+          });
         }
       }
   
@@ -221,7 +236,7 @@ export default function ImageUploader() {
         return
       }
   
-      const messagesBySender: { [key: string]: any[] } = {}
+      const messagesBySender: Record<string, Message[]> = {}
       for (const message of messagesData.messages) {
         if (!messagesBySender[message.email_sender]) {
           messagesBySender[message.email_sender] = []
@@ -230,7 +245,7 @@ export default function ImageUploader() {
       }
   
       const senderEmails = Object.keys(messagesBySender)
-      const senderNames: { [key: string]: string } = {}
+      const senderNames: Record<string, string> = {}
       
       for (const email of senderEmails) {
         const nameResponse = await fetch('/api/users/getname?' + new URLSearchParams({ email }))
@@ -238,7 +253,7 @@ export default function ImageUploader() {
         senderNames[email] = nameData.name?.name || 'Unknown User'
       }
   
-      const messageData = []
+      const messageData: MessageData[] = []
       
       for (const [email, messages] of Object.entries(messagesBySender)) {
         messageData.push({
@@ -246,7 +261,7 @@ export default function ImageUploader() {
           senderEmail: email,
           messages: messages.map(msg => ({
             text: msg.message,
-            timestamp: msg.timestamp
+            timestamp: msg.timestamp || ''
           }))
         })
       }
@@ -327,12 +342,16 @@ export default function ImageUploader() {
                   <Label>Selected Images</Label>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                     {previewUrls.map((url, index) => (
-                      <div key={index} className="relative group">
-                        <img
-                          src={url}
-                          alt={`Preview ${index + 1}`}
-                          className="w-full h-32 object-cover rounded-lg border border-gray-200"
-                        />
+                      <div key={index} className="relative group h-32">
+                        <div className="relative w-full h-full">
+                          <Image
+                            src={url}
+                            alt={`Preview ${index + 1}`}
+                            fill
+                            className="object-cover rounded-lg border border-gray-200"
+                            sizes="(max-width: 768px) 50vw, 33vw"
+                          />
+                        </div>
                         <Button
                           type="button"
                           variant="destructive"
@@ -382,7 +401,7 @@ export default function ImageUploader() {
         </CardContent>
         <CardFooter className="flex flex-col sm:flex-row gap-3">
           <Button
-            onClick={(e) => handleSubmit(e as any)}
+            onClick={() => handleSubmit(new Event('submit') as unknown as React.FormEvent<HTMLFormElement>)}
             disabled={selectedImages.length === 0 || isUploading || isSuccess}
             className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto"
           >

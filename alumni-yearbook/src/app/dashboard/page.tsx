@@ -7,7 +7,6 @@ import { AppSidebar } from "@/components/app-sidebar";
 import {
   SidebarInset,
   SidebarProvider,
-  SidebarTrigger,
 } from "@/components/ui/sidebar";
 
 import FeedContent from "@/components/feed-content";

@@ -81,7 +81,7 @@ export default function MessageJunior() {
               This message will be visible to your junior when they get access to this portal, that is, their graduation year! It will also appear in their yearbook.
             </p>
             <div className="space-y-2">
-              <label htmlFor="email" className="text-sm font-medium">Junior's Email</label>
+              <label htmlFor="email" className="text-sm font-medium">Junior&apos;s Email</label>
               <Input
                 id="email" 
                 type="email" 

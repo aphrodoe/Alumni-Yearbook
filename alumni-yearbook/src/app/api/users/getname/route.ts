@@ -22,10 +22,6 @@ export async function GET(request: Request) {
             return NextResponse.json({ error: 'Email is required' }, { status: 400 });
         }
 
-        const name = await User.findOne({
-            email: email
-        });
-
         // Fetch user by email
         const user = await User.findOne({ email });
 

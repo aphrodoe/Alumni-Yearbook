@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const MessageBatchmateSchema = new mongoose.Schema({
     email_sender: { type: String, required: true },

@@ -5,7 +5,7 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "../auth/[...nextauth]/route";
 import emailjs from 'emailjs-com';
 
-export async function POST(request: { json: () => PromiseLike<{ message: any; }> | { message: any; }; }) {
+export async function POST(request: { json: () => Promise<{ message: string }> }) {
   const session = await getServerSession(authOptions);
   if (!session) {
     return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });

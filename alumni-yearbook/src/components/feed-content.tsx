@@ -2,6 +2,7 @@ import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Heart, MessageCircle, Share2 } from "lucide-react"
+import Image from "next/image"
 
 // Sample feed data
 const feedItems = [
@@ -65,8 +66,14 @@ export default function FeedContent() {
           </CardHeader>
           <CardContent className="p-0">
             <p className="px-4 py-2">{item.content}</p>
-            <div className="aspect-video w-full bg-gray-100 overflow-hidden">
-              <img src={item.image || "/placeholder.svg"} alt="Post content" className="w-full h-full object-cover" />
+            <div className="aspect-video w-full bg-gray-100 overflow-hidden relative">
+              <Image 
+                src={item.image || "/placeholder.svg"} 
+                alt="Post content" 
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              />
             </div>
           </CardContent>
           <CardFooter className="p-4 flex justify-between">
@@ -85,4 +92,3 @@ export default function FeedContent() {
     </div>
   )
 }
-

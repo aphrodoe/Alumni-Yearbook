@@ -1,10 +1,7 @@
 "use client";
-
-import { useRouter } from "next/navigation";
 import PDFViewer from "@/components/PDFViewer";
 
 export default function PDFViewerPage() {
-  const router = useRouter();
   const query = new URLSearchParams(window.location.search);
   const fileLocation = query.get("fileLocation");
 

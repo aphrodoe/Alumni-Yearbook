@@ -1,7 +1,6 @@
-import { degrees, PDFDocument, rgb, StandardFonts } from "pdf-lib";
+import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
 import fontkit from "@pdf-lib/fontkit";
 import fs from "fs";
-import path from "path";
 import { v2 as cloudinary } from 'cloudinary';
 import dbConnect from '@/lib/mongodb';
 import { getServerSession } from "next-auth/next";
@@ -38,11 +37,12 @@ async function createMessagePDF(messageData: MessageData[]): Promise<string> {
   const standardFont = await pdfDoc.embedFont(StandardFonts.Helvetica);
   
   const titlePage = pdfDoc.addPage([595, 842]); 
-  const { width, height } = titlePage.getSize();
+
+  const { width: titlePageWidth, height: titlePageHeight } = titlePage.getSize();
   
   titlePage.drawText("My Messages", {
     x: 50,
-    y: height - 100,
+    y: titlePageHeight - 100,
     size: 40,
     font: titleFont,
     color: rgb(0, 0, 0)
@@ -76,7 +76,7 @@ async function createMessagePDF(messageData: MessageData[]): Promise<string> {
     });
     
     let yPosition = height - 130;
-    const messageGap = 20;
+    const spacing = 20;
     const messageMargin = 50;
     const maxWidth = width - (messageMargin * 2);
     
