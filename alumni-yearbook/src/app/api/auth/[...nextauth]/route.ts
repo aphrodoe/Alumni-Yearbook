@@ -1,10 +1,10 @@
 import NextAuth from "next-auth";
-import type { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import dbConnect from "../../../../lib/mongodb";
 import User from "../../../models/User";
+import type { NextAuthOptions } from "next-auth";
 
-export const authOptions: NextAuthOptions = {
+const authOptions: NextAuthOptions = {
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
@@ -16,13 +16,13 @@ export const authOptions: NextAuthOptions = {
     async signIn({ user }) {
       const email = user.email || "";
       const isAllowedEmail = email.startsWith("b24");
-      
+
       if (isAllowedEmail) {
         await dbConnect();
-        
+
         try {
           const existingUser = await User.findOne({ email: user.email });
-          
+
           if (!existingUser) {
             await User.create({
               email: user.email,
@@ -32,15 +32,13 @@ export const authOptions: NextAuthOptions = {
           }
         } catch (error) {
           console.error("Error saving user to MongoDB:", error);
-
         }
       }
-      
+
       return isAllowedEmail;
     },
     async session({ session, token }) {
       if (session.user) {
-        
         (session.user as { id: string }).id = token.sub || '';
       }
       return session;
