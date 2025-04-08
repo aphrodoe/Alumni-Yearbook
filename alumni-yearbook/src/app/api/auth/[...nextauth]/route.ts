@@ -1,10 +1,11 @@
 import NextAuth from "next-auth";
+import type { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import dbConnect from "../../../../lib/mongodb";
 import User from "../../../models/User";
-import type { NextAuthOptions } from "next-auth";
 
-const authOptions: NextAuthOptions = {
+// Define authOptions
+const options: NextAuthOptions = {
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
@@ -19,10 +20,8 @@ const authOptions: NextAuthOptions = {
 
       if (isAllowedEmail) {
         await dbConnect();
-
         try {
           const existingUser = await User.findOne({ email: user.email });
-
           if (!existingUser) {
             await User.create({
               email: user.email,
@@ -49,6 +48,9 @@ const authOptions: NextAuthOptions = {
   },
 };
 
-const handler = NextAuth(authOptions);
-
+// Only export the handler as route methods
+const handler = NextAuth(options);
 export { handler as GET, handler as POST };
+
+// This keeps your imports working
+export const authOptions = options;
