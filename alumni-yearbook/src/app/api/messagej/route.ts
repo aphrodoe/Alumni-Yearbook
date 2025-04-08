@@ -2,9 +2,9 @@ import { NextResponse } from 'next/server';
 import connectToDatabase from '@/lib/mongodb';
 import Messagej from '../../models/Messagej';
 import { getServerSession } from "next-auth/next";
-import { authOptions } from "../auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 
-export async function POST(request) {
+export async function POST(request: Request) {
   const session = await getServerSession(authOptions);
   if (!session) {
     return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
@@ -22,6 +22,13 @@ export async function POST(request) {
 
     await connectToDatabase();
     
+    if (!session.user) {
+      return NextResponse.json(
+        { message: 'User information is missing in the session' }, 
+        { status: 400 }
+      );
+    }
+
     const newMessagej = new Messagej({
       email: session.user.email,
       email_receiver: email,
@@ -32,12 +39,12 @@ export async function POST(request) {
     
     return NextResponse.json({ 
       message: 'Message sent successfully',
-      message: newMessagej
+      messageData: newMessagej
     });
   } catch (error) {
     console.error('Error sending message:', error);
     return NextResponse.json(
-      { message: 'Error sending message', error: error.message }, 
+      { message: 'Error sending message', error: (error as Error).message }, 
       { status: 500 }
     );
   }

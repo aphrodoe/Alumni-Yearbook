@@ -3,7 +3,7 @@ import { v2 as cloudinary } from 'cloudinary';
 import connectToDatabase from '@/lib/mongodb';
 import UserPreference from '@/app/models/UserPreference';
 import { getServerSession } from "next-auth/next";
-import { authOptions } from "../../auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,

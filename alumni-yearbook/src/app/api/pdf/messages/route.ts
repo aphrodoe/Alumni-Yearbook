@@ -4,7 +4,7 @@ import fs from "fs";
 import { v2 as cloudinary } from 'cloudinary';
 import dbConnect from '@/lib/mongodb';
 import { getServerSession } from "next-auth/next";
-import { authOptions } from "../../auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 import { NextResponse } from 'next/server';
 
 cloudinary.config({

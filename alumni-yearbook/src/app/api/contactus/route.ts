@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import connectToDatabase from '@/lib/mongodb';
 import ContactMessage from '@/app/models/contact_us';
 import { getServerSession } from "next-auth/next";
-import { authOptions } from "../auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 import emailjs from 'emailjs-com';
 
 export async function POST(request: { json: () => Promise<{ message: string }> }) {

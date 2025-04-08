@@ -7,7 +7,7 @@ import dbConnect from '../../../lib/mongodb.js';
 import { v2 as cloudinary } from 'cloudinary';
 import Section from "@/app/models/Section"
 import { getServerSession } from "next-auth/next";
-import { authOptions } from "../auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 import { NextResponse } from 'next/server';
 
 //const connectToDatabase = require("@/lib/mongo.js");

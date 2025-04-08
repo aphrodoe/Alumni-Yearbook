@@ -2,7 +2,8 @@ import { NextResponse } from 'next/server';
 import connectToDatabase from '@/lib/mongodb';
 import UserPreference from '@/app/models/UserPreference';
 import { getServerSession } from "next-auth/next";
-import { authOptions } from "../../auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
+import dbConnect from '@/lib/mongodb';
 
 export async function GET(request: Request) {
   const session = await getServerSession(authOptions);
@@ -11,7 +12,7 @@ export async function GET(request: Request) {
   }
 
   try {
-    await connectToDatabase();
+    await dbConnect();
     
     const url = new URL(request.url);
     const queryEmail = url.searchParams.get('email');

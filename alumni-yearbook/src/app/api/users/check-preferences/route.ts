@@ -1,10 +1,19 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import User from '@/app/models/User';
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/lib/auth";
+
 
 export async function GET(request: Request) {
     try {
         await dbConnect();
+
+        const session = await getServerSession(authOptions);
+    
+        if (!session) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
 
         const { searchParams } = new URL(request.url);
         const email = searchParams.get('email');
