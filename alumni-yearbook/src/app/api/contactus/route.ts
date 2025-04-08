@@ -1,11 +1,11 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import connectToDatabase from '@/lib/mongodb';
 import ContactMessage from '@/app/models/contact_us';
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import emailjs from 'emailjs-com';
 
-export async function POST(request: { json: () => Promise<{ message: string }> }) {
+export async function POST(request: NextRequest | Request) {
   const session = await getServerSession(authOptions);
   if (!session) {
     return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
