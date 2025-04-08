@@ -1,36 +1,45 @@
 # Build Stage
 FROM node:18-alpine AS builder
 
-# Install dependencies required for native modules
-RUN apk add --no-cache python3 make g++
+# Install build tools and native dependencies
+RUN apk add --no-cache \
+    python3 \
+    make \
+    g++ \
+    pkgconfig \
+    cairo-dev \
+    pango-dev \
+    jpeg-dev \
+    giflib-dev \
+    librsvg-dev \
+    pixman-dev \
+    build-base
 
 WORKDIR /app
-
-# Install all dependencies (including devDependencies)
 COPY package*.json ./
 RUN npm ci
-
-# Copy source files and build the application
 COPY . .
 RUN npm run build
 
 # Production Stage
 FROM node:18-alpine
 
-# Install runtime dependencies for native modules
-RUN apk add --no-cache python3 make g++
+# Install runtime dependencies (non-dev versions)
+RUN apk add --no-cache \
+    cairo \
+    pango \
+    jpeg \
+    giflib \
+    librsvg \
+    pixman
 
 WORKDIR /app
 
-# Install production dependencies only
-COPY package*.json ./
-RUN npm ci --production
-
-# Copy built assets from the builder stage
+# Copy built assets and dependencies
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package.json .
 
 EXPOSE 3000
-
-# Start Next.js in production mode
 CMD ["npm", "start"]
