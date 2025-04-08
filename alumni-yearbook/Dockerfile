@@ -34,14 +34,14 @@ FROM node:18-alpine
 
 WORKDIR /app
 
-COPY --from=builder /app/package*.json ./
-RUN npm ci --only=production
-
-COPY --from=builder /app/next.config.ts ./ 
-COPY --from=builder /app/public ./public
+# Copy only the standalone output
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
+COPY --from=builder /app/public ./public
 
 EXPOSE 3000
-CMD ["npm", "start"]
+
+# Start the server
+CMD ["node", "server.js"]
+
 
