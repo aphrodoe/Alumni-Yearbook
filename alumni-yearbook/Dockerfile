@@ -1,5 +1,18 @@
-# Use the official Node.js image as the base image
+# Use the official Node.js Alpine image as the base image
 FROM node:18-alpine
+
+# Install build dependencies for canvas and node-gyp
+RUN apk add --no-cache \
+    python3 \
+    make \
+    g++ \
+    cairo-dev \
+    pango-dev \
+    jpeg-dev \
+    giflib-dev \
+    librsvg-dev \
+    pixman-dev \
+    build-base
 
 # Set the working directory inside the container
 WORKDIR /app
