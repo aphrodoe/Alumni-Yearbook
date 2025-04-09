@@ -1,7 +1,6 @@
 # Build Stage
 FROM node:18-alpine AS builder
 
-# Install build tools and native dependencies
 RUN apk add --no-cache \
     python3 \
     make \
@@ -21,7 +20,6 @@ RUN npm ci
 COPY . .
 RUN npm run build
 
-# Production Stage
 FROM node:18-alpine
 
 # Install runtime dependencies (non-dev versions)

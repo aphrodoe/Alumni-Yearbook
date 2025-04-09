@@ -14,7 +14,7 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async signIn({ user }) {
       const email = user.email || "";
-      const isAllowedEmail = email.startsWith("b24");
+      const isAllowedEmail = email.startsWith("b");
 
       if (isAllowedEmail) {
         await dbConnect();
