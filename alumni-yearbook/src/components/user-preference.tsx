@@ -99,7 +99,7 @@ export default function UserPreferenceForm() {
           })
             .then(async (response) => {
               if (response.ok) {
-                fetch("/api/users/change-preference", {
+                await fetch("/api/users/change-preference", {
                   method: "POST",
                   headers: {
                     "Content-Type": "application/json",
@@ -108,9 +108,7 @@ export default function UserPreferenceForm() {
                   },
                 });
                 console.log("Preferences updated successfully");
-                setTimeout(() => {
-                  router.push("/dashboard");
-                }, 500);
+                router.push("/dashboard"); // Redirect immediately after confirmation
               } else {
                 const errorData = await response.json();
                 console.error("Failed to update preferences:", errorData);
@@ -164,7 +162,6 @@ export default function UserPreferenceForm() {
               ></div>
             ))}
           </div>
-
 
           <h2 className="text-xl font-semibold text-blue-600 mb-4">
             {step === 1
@@ -234,7 +231,6 @@ export default function UserPreferenceForm() {
             </div>
           )}
 
-
           {step === 3 && (
             <div className="space-y-4">
               <div className="space-y-2">
@@ -285,7 +281,6 @@ export default function UserPreferenceForm() {
                   <p className="text-sm text-gray-600 mt-1">{formData.quote || "No quote provided"}</p>
                 </div>
               </div>
-              
               
               <div className="space-y-2">
                 <h4 className="font-medium text-gray-700">Extracurricular Activities</h4>

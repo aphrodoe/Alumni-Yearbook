@@ -1,94 +1,106 @@
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Button } from "@/components/ui/button"
-import { Heart, MessageCircle, Share2 } from "lucide-react"
-import Image from "next/image"
-
-// Sample feed data
-const feedItems = [
-  {
-    id: 1,
-    user: {
-      name: "Peter Parker",
-      avatar: "/placeholder.svg?height=40&width=40",
-      initials: "PP",
-    },
-    content: "Just hanging around campus for the last time. Going to miss this place!",
-    image: "/placeholder.svg?height=400&width=600",
-    likes: 42,
-    comments: 7,
-    time: "2 hours ago",
-  },
-  {
-    id: 2,
-    user: {
-      name: "MJ Watson",
-      avatar: "/placeholder.svg?height=40&width=40",
-      initials: "MJ",
-    },
-    content: "Final drama club performance was amazing! Thanks to everyone who came to support us.",
-    image: "/placeholder.svg?height=400&width=600",
-    likes: 38,
-    comments: 5,
-    time: "5 hours ago",
-  },
-  {
-    id: 3,
-    user: {
-      name: "Ned Leeds",
-      avatar: "/placeholder.svg?height=40&width=40",
-      initials: "NL",
-    },
-    content: "Computer Science club group photo! We built some amazing projects this year.",
-    image: "/placeholder.svg?height=400&width=600",
-    likes: 27,
-    comments: 3,
-    time: "1 day ago",
-  },
-]
+import Image from "next/image";
+import { useState } from "react";
+import { ChevronDown, ChevronUp } from "lucide-react";
 
 export default function FeedContent() {
-  return (
-    <div className="max-w-3xl mx-auto space-y-6">
-      <h2 className="text-2xl font-bold text-blue-600 mb-6 pt-4">Class Feed</h2>
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
 
-      {feedItems.map((item) => (
-        <Card key={item.id} className="border-blue-100 bg-white shadow-sm text-gray-800 overflow-hidden">
-          <CardHeader className="p-4 flex flex-row items-center space-x-4 space-y-0">
-            <Avatar>
-              <AvatarImage src={item.user.avatar} alt={item.user.name} />
-              <AvatarFallback className="bg-blue-100 text-blue-600">{item.user.initials}</AvatarFallback>
-            </Avatar>
-            <div>
-              <h3 className="font-semibold">{item.user.name}</h3>
-              <p className="text-sm text-gray-500">{item.time}</p>
-            </div>
-          </CardHeader>
-          <CardContent className="p-0">
-            <p className="px-4 py-2">{item.content}</p>
-            <div className="aspect-video w-full bg-gray-100 overflow-hidden relative">
-              <Image 
-                src={item.image || "/placeholder.svg"} 
-                alt="Post content" 
-                fill
-                className="object-cover"
-                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-              />
-            </div>
-          </CardContent>
-          <CardFooter className="p-4 flex justify-between">
-            <Button variant="ghost" size="sm" className="text-gray-500 hover:text-blue-600">
-              <Heart className="mr-1 h-4 w-4" /> {item.likes}
-            </Button>
-            <Button variant="ghost" size="sm" className="text-gray-500 hover:text-blue-600">
-              <MessageCircle className="mr-1 h-4 w-4" /> {item.comments}
-            </Button>
-            <Button variant="ghost" size="sm" className="text-gray-500 hover:text-blue-600">
-              <Share2 className="mr-1 h-4 w-4" /> Share
-            </Button>
-          </CardFooter>
-        </Card>
-      ))}
+  const toggleDropdown = (index: number) => {
+    setOpenIndex(openIndex === index ? null : index);
+  };
+
+  const faqs = [
+    {
+      question: "What is this website about?",
+      answer:
+        "This website allows you to upload memories -- photos and quotes to be featured in your yearbook. It also allows you to send heartfelt messages to your batchmates and juniors.",
+    },
+    {
+      question: "What will the yearbook 2025 contain?",
+      answer:
+        "The yearbook 2025 is a time capsule of your unforgettable journey at IITJ. It will feature your photo, inspiring quotes, and personal reflections on your time at the institute. Relive the best moments of hostel and campus life, captured through candid snapshots and batch photoshoot images. Most importantly, it will hold heartfelt messages from your batchmates--words that will bring back memories long after graduation. This yearbook isn't just a book, it's your IITJ story, preserved forever.",
+    },
+    {
+      question: "Can I message my batchmates and juniors?",
+      answer:
+        "Absolutely! You can send messages to your batchmates and juniors anytime. Your messages will be preserved and included in their yearbook, making them a lasting part of their graduation memories and adding an extra layer of meaning to their graduation celebrations. Whether it's a heartfelt note, words of encouragement, or a fun memory, your message will be a keepsake they'll treasure forever.",
+    },
+    {
+      question: "How will I receive my yearbook?",
+      answer:
+        "You will receive your digital yearbook on your graduation day! It will be unlocked and available for you to access on the website, filled with your personal photos, quotes, and heartfelt messages from batchmates and juniors. It's a surprise waiting to be unveiled, capturing the best moments of your time at IITJ, and you can cherish it forever!",
+    },
+  ];
+
+  return (
+    <div className="max-w-6xl mx-auto p-6 space-y-8">
+      {/* Logo Section */}
+      <div className="flex justify-between items-center">
+        <div className="relative w-40 h-40"> {/* Enlarged to 200% */}
+          <Image
+            src="/IITJ_logo.png"
+            alt="IITJ Logo"
+            fill
+            className="object-contain"
+          />
+        </div>
+        <div className="relative w-40 h-40"> {/* Enlarged to 200% */}
+          <Image
+            src="/SAA_logo.png"
+            alt="SAA Logo"
+            fill
+            className="object-contain"
+          />
+        </div>
+      </div>
+
+      {/* Heading Section */}
+      <div className="text-center mt-6">
+        <h1 className="text-4xl font-extrabold text-blue-900 mb-4">
+          Welcome to the{" "}
+          <span className="italic text-5xl text-blue-700">YEARBOOK</span>
+        </h1>
+        <p className="text-lg text-gray-700 leading-relaxed">
+          A yearbook is not just a collection of photos and names—it’s a time
+          capsule of unforgettable moments, friendships, and achievements that
+          define your journey. It captures the late-night coding marathons,
+          thrilling project successes, endless brainstorming sessions, birthday
+          bashes, and the camaraderie that made it all worthwhile. It’s a
+          tribute to the challenges you conquered, the knowledge you gained,
+          and most importantly, the friends you made along the way, and the
+          memories you created along the way. Years from now, when you flip
+          through its pages, it won’t just remind you of what you studied, but
+          of the people, experiences, and lessons that shaped your future.
+        </p>
+      </div>
+
+      {/* FAQ Section */}
+      <div className="space-y-6">
+        <h2 className="text-3xl font-bold text-blue-900 text-center">FAQs</h2>
+        {faqs.map((faq, index) => (
+          <div
+            key={index}
+            className="border border-blue-300 overflow-hidden shadow-md"
+          >
+            <button
+              onClick={() => toggleDropdown(index)}
+              className="w-full flex justify-between items-center px-4 py-3 bg-blue-100 hover:bg-blue-200 text-blue-900 font-semibold transition-colors"
+            >
+              <span>{faq.question}</span>
+              {openIndex === index ? (
+                <ChevronUp className="h-5 w-5" />
+              ) : (
+                <ChevronDown className="h-5 w-5" />
+              )}
+            </button>
+            {openIndex === index && (
+              <div className="px-4 py-3 bg-blue-50 text-gray-700">
+                {faq.answer}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
     </div>
-  )
+  );
 }
