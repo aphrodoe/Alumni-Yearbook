@@ -33,73 +33,81 @@ export default function FeedContent() {
   ];
 
   return (
-    <div className="max-w-6xl mx-auto p-6 space-y-8">
-      {/* Logo Section */}
-      <div className="flex justify-between items-center">
-        <div className="relative w-40 h-40"> {/* Enlarged to 200% */}
-          <Image
-            src="/IITJ_logo.png"
-            alt="IITJ Logo"
-            fill
-            className="object-contain"
-          />
-        </div>
-        <div className="relative w-40 h-40"> {/* Enlarged to 200% */}
-          <Image
-            src="/SAA_logo.png"
-            alt="SAA Logo"
-            fill
-            className="object-contain"
-          />
-        </div>
-      </div>
-
-      {/* Heading Section */}
-      <div className="text-center mt-6">
-        <h1 className="text-4xl font-extrabold text-blue-900 mb-4">
-          Welcome to the{" "}
-          <span className="italic text-5xl text-blue-700">YEARBOOK</span>
-        </h1>
-        <p className="text-lg text-gray-700 leading-relaxed">
-          A yearbook is not just a collection of photos and names—it’s a time
-          capsule of unforgettable moments, friendships, and achievements that
-          define your journey. It captures the late-night coding marathons,
-          thrilling project successes, endless brainstorming sessions, birthday
-          bashes, and the camaraderie that made it all worthwhile. It’s a
-          tribute to the challenges you conquered, the knowledge you gained,
-          and most importantly, the friends you made along the way, and the
-          memories you created along the way. Years from now, when you flip
-          through its pages, it won’t just remind you of what you studied, but
-          of the people, experiences, and lessons that shaped your future.
-        </p>
-      </div>
-
-      {/* FAQ Section */}
-      <div className="space-y-6">
-        <h2 className="text-3xl font-bold text-blue-900 text-center">FAQs</h2>
-        {faqs.map((faq, index) => (
-          <div
-            key={index}
-            className="border border-blue-300 overflow-hidden shadow-md"
-          >
-            <button
-              onClick={() => toggleDropdown(index)}
-              className="w-full flex justify-between items-center px-4 py-3 bg-blue-100 hover:bg-blue-200 text-blue-900 font-semibold transition-colors"
-            >
-              <span>{faq.question}</span>
-              {openIndex === index ? (
-                <ChevronUp className="h-5 w-5" />
-              ) : (
-                <ChevronDown className="h-5 w-5" />
-              )}
-            </button>
-            {openIndex === index && (
-              <div className="px-4 py-3 bg-blue-50 text-gray-700">
-                {faq.answer}
-              </div>
-            )}
+    <div
+      className="relative bg-cover bg-center min-h-screen"
+      style={{
+        backgroundImage: "url('/IITJ_background.png')",
+      }}
+    >
+      <div className="max-w-6xl mx-auto p-6 space-y-8 bg-white bg-opacity-80 rounded-lg">
+        {/* Logo Section */}
+        <div className="flex justify-between items-center">
+          <div className="relative w-40 h-40"> {/* Enlarged to 200% */}
+            <Image
+              src="/IITJ_logo.png"
+              alt="IITJ Logo"
+              fill
+              className="object-contain"
+            />
           </div>
-        ))}
+          <h1 className="text-6xl font-bold text-blue-900">YEARBOOK 2025</h1> {/* Increased size to 300% */}
+          <div className="relative w-40 h-40"> {/* Enlarged to 200% */}
+            <Image
+              src="/SAA_logo.png"
+              alt="SAA Logo"
+              fill
+              className="object-contain"
+            />
+          </div>
+        </div>
+
+        {/* Heading Section */}
+        <div className="text-center mt-6">
+          <h1 className="text-4xl font-extrabold text-blue-900 mb-4">
+            Welcome to the{" "}
+            <span className="italic text-5xl text-blue-700">YEARBOOK</span>
+          </h1>
+          <p className="text-lg text-gray-700 leading-relaxed">
+            A yearbook is not just a collection of photos and names—it’s a time
+            capsule of unforgettable moments, friendships, and achievements that
+            define your journey. It captures the late-night coding marathons,
+            thrilling project successes, endless brainstorming sessions, birthday
+            bashes, and the camaraderie that made it all worthwhile. It’s a
+            tribute to the challenges you conquered, the knowledge you gained,
+            and most importantly, the friends you made along the way, and the
+            memories you created along the way. Years from now, when you flip
+            through its pages, it won’t just remind you of what you studied, but
+            of the people, experiences, and lessons that shaped your future.
+          </p>
+        </div>
+
+        {/* FAQ Section */}
+        <div className="space-y-6">
+          <h2 className="text-3xl font-bold text-blue-900 text-center">FAQs</h2>
+          {faqs.map((faq, index) => (
+            <div
+              key={index}
+              className="border border-blue-300 overflow-hidden shadow-md"
+            >
+              <button
+                onClick={() => toggleDropdown(index)}
+                className="w-full flex justify-between items-center px-4 py-3 bg-blue-100 hover:bg-blue-200 text-blue-900 font-semibold transition-colors"
+              >
+                <span>{faq.question}</span>
+                {openIndex === index ? (
+                  <ChevronUp className="h-5 w-5" />
+                ) : (
+                  <ChevronDown className="h-5 w-5" />
+                )}
+              </button>
+              {openIndex === index && (
+                <div className="px-4 py-3 bg-blue-50 text-gray-700">
+                  {faq.answer}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
