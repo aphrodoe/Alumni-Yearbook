@@ -19,9 +19,9 @@ export async function POST(request: Request) {
   }
 
   try {
-    const { photoUrl, quote, clubs } = await request.json();
+    const { photoUrl, number} = await request.json();
     
-    if (!photoUrl || !quote || !clubs) {
+    if (!photoUrl || !number) {
       return NextResponse.json(
         { message: 'All fields are required' }, 
         { status: 400 }
@@ -40,8 +40,7 @@ export async function POST(request: Request) {
       { email: session.user.email },
       {
         photoUrl: uploadResponse.secure_url,
-        quote,
-        clubs,
+        number,
       },
       { upsert: true, new: true }
     );

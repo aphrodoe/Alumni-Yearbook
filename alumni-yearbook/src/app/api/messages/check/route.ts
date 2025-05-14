@@ -23,17 +23,11 @@ export async function POST(request: Request) {
       ]
     }).sort({ timestamp: 1 });
 
-    const hasSentMessage = await MessageBatchmate.findOne({
-      email_sender: sender,
-      email_receiver: receiver
-    });
-
-    const canMessage = !hasSentMessage;
 
     return NextResponse.json({ 
       messages: allMessages,
-      canMessage: canMessage
     });
+    
   } catch (error) {
     console.error('Error checking messages:', error);
     return NextResponse.json({ error: 'Failed to check messages' }, { status: 500 });

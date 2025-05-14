@@ -16,14 +16,6 @@ export async function POST(request: Request) {
 
     const { email_sender, email_receiver, message } = await request.json();
 
-    const existingMessage = await MessageBatchmate.findOne({
-      email_sender,
-      email_receiver
-    });
-
-    if (existingMessage) {
-      return NextResponse.json({ error: 'You have already sent a message to this user' }, { status: 400 });
-    }
 
     const newMessage = await MessageBatchmate.create({
       email_sender,
