@@ -11,7 +11,7 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-// In your update-preference route
+
 export async function POST(request: Request) {
   const session = await getServerSession(authOptions);
   if (!session || !session.user?.email) {

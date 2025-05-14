@@ -13,6 +13,7 @@ import {
   LogOut,
   ChevronDown,
   User,
+  Package,
   Users, 
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -28,13 +29,6 @@ import {
   SidebarProvider,
 } from "@/components/ui/sidebar"
 
-interface SectionStruct {
-  email: string;
-  cloudinaryId: string;
-  cloudinaryUrl: string;
-  headtitle: string;
-}
-
 interface AppSidebarProps {
   children: React.ReactNode;
   onNavChange: (content: string, url?: string) => void;
@@ -44,31 +38,6 @@ interface AppSidebarProps {
 export function AppSidebar({ children, onNavChange, activeContent }: AppSidebarProps) {
   const router = useRouter()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const [dynamicSections, setDynamicSections] = useState<{ title: string; url: string }[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-
-  useEffect(() => {
-    async function fetchSections() {
-      try {
-        const response = await fetch(`/api/section/get/`); 
-        if (!response.ok) throw new Error("Failed to fetch sections");
-        const data: SectionStruct[] = await response.json();
-
-        const sections = data.map((section) => ({
-          title: section.headtitle,
-          url: section.cloudinaryUrl,
-        }));
-
-        setDynamicSections(sections);
-      } catch (error) {
-        console.error("Error fetching sections:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
-    fetchSections();
-  }, []);
 
   // Add effect to handle body overflow when mobile menu is open
   useEffect(() => {
@@ -88,22 +57,8 @@ export function AppSidebar({ children, onNavChange, activeContent }: AppSidebarP
   }
 
   const navItems = [
-    { id: "feed", label: "Feed", icon: Book },
-    { 
-      id: "yearbook", 
-      label: "Your Yearbook", 
-      icon: User,
-      dropdown: true,
-      items: [
-        { id: "yearbook", label: "Yearbook", icon: Book, url: "/YEARBOOK_BATCH_2024.pdf" },
-        ...dynamicSections.map(section => ({ 
-          id: `section-${section.title}`, 
-          label: section.title, 
-          icon: Book,
-          url: section.url
-        }))
-      ]
-    },
+    { id: "about", label: "About", icon: Book },
+    { id: "feed", label: "Feed", icon: Package },
     {
       id: "message",
       label: "Message",
@@ -119,6 +74,7 @@ export function AppSidebar({ children, onNavChange, activeContent }: AppSidebarP
       label: "Upload memories",
       icon: Upload,
     },
+    { id: "update", label: "Update Details", icon: User },
     { id: "contact_us", label: "Contact Us", icon: Mail },
     {
       id: "team",
@@ -127,15 +83,8 @@ export function AppSidebar({ children, onNavChange, activeContent }: AppSidebarP
     },
   ]
 
-  const handleNavItemClick = (id: string, url?: string) => {
-    // For yearbook items, pass both the ID and URL to onNavChange
-    if (id === "yearbook" || id.startsWith("section-")) {
-      onNavChange(id, url);
-    } 
-    // For non-yearbook items, just pass the ID
-    else {
-      onNavChange(id);
-    }
+  const handleNavItemClick = (id: string) => {
+    onNavChange(id);
     setMobileMenuOpen(false);
   }
 
@@ -179,7 +128,7 @@ export function AppSidebar({ children, onNavChange, activeContent }: AppSidebarP
                           key={subItem.id}
                           variant="ghost"
                           className={`w-full justify-start ${activeContent === subItem.id ? "bg-blue-50 text-blue-600" : "text-gray-500"}`}
-                          onClick={() => handleNavItemClick(subItem.id, 'url' in subItem ? subItem.url : undefined)}
+                          onClick={() => handleNavItemClick(subItem.id)}
                         >
                           <subItem.icon className="mr-2 h-5 w-5" />
                           {subItem.label}
@@ -220,56 +169,50 @@ export function AppSidebar({ children, onNavChange, activeContent }: AppSidebarP
               <p className="text-sm text-gray-500">Class of 2025 Yearbook</p>
             </SidebarHeader>
             <SidebarContent className="py-4">
-              {isLoading ? (
-                <div className="flex justify-center p-4">
-                  <div className="animate-pulse">Loading sections...</div>
-                </div>
-              ) : (
-                <SidebarMenu>
-                  {navItems.map((item) => {
-                    if (item.dropdown) {
-                      return (
-                        <SidebarMenuItem key={item.id}>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <SidebarMenuButton className="w-full">
-                                <item.icon className="mr-2 h-5 w-5" />
-                                <span>{item.label}</span>
-                                <ChevronDown className="ml-auto h-4 w-4" />
-                              </SidebarMenuButton>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent className="w-56 bg-white border-blue-100">
-                              {item.items?.map((subItem) => (
-                                <DropdownMenuItem
-                                  key={subItem.id}
-                                  className="cursor-pointer hover:bg-blue-50"
-                                  onClick={() => handleNavItemClick(subItem.id, 'url' in subItem ? subItem.url : undefined)}
-                                >
-                                  <subItem.icon className="mr-2 h-4 w-4" />
-                                  <span>{subItem.label}</span>
-                                </DropdownMenuItem>
-                              ))}
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </SidebarMenuItem>
-                      )
-                    }
-
+              <SidebarMenu>
+                {navItems.map((item) => {
+                  if (item.dropdown) {
                     return (
                       <SidebarMenuItem key={item.id}>
-                        <SidebarMenuButton
-                          onClick={() => handleNavItemClick(item.id)}
-                          isActive={activeContent === item.id}
-                          className={activeContent === item.id ? "bg-blue-50 text-blue-600" : ""}
-                        >
-                          <item.icon className="mr-2 h-5 w-5" />
-                          <span>{item.label}</span>
-                        </SidebarMenuButton>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <SidebarMenuButton className="w-full">
+                              <item.icon className="mr-2 h-5 w-5" />
+                              <span>{item.label}</span>
+                              <ChevronDown className="ml-auto h-4 w-4" />
+                            </SidebarMenuButton>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent className="w-56 bg-white border-blue-100">
+                            {item.items?.map((subItem) => (
+                              <DropdownMenuItem
+                                key={subItem.id}
+                                className="cursor-pointer hover:bg-blue-50"
+                                onClick={() => handleNavItemClick(subItem.id)}
+                              >
+                                <subItem.icon className="mr-2 h-4 w-4" />
+                                <span>{subItem.label}</span>
+                              </DropdownMenuItem>
+                            ))}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </SidebarMenuItem>
                     )
-                  })}
-                </SidebarMenu>
-              )}
+                  }
+
+                  return (
+                    <SidebarMenuItem key={item.id}>
+                      <SidebarMenuButton
+                        onClick={() => handleNavItemClick(item.id)}
+                        isActive={activeContent === item.id}
+                        className={activeContent === item.id ? "bg-blue-50 text-blue-600" : ""}
+                      >
+                        <item.icon className="mr-2 h-5 w-5" />
+                        <span>{item.label}</span>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  )
+                })}
+              </SidebarMenu>
             </SidebarContent>
             <SidebarFooter className="mt-auto p-4 border-t border-blue-100">
               <Button variant="ghost" className="w-full justify-start text-gray-500" onClick={handleLogout}>

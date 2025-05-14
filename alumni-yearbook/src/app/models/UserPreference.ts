@@ -16,4 +16,6 @@ const UserPreferenceSchema = new mongoose.Schema({
   },
 }, { timestamps: true });
 
-export default mongoose.models.UserPreference || mongoose.model('UserPreference', UserPreferenceSchema);
+const UserPreference = mongoose.models.UserPreference || mongoose.model('UserPreference', UserPreferenceSchema);
+
+export default UserPreference;

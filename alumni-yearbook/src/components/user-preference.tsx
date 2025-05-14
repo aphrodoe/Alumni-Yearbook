@@ -3,25 +3,34 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { Upload, Quote, ChevronLeft, ChevronRight, Check, FolderInputIcon } from "lucide-react"; 
+import { Upload, Quote, ChevronLeft, ChevronRight, Check, BookOpen, MessageSquare } from "lucide-react"; 
 import { getSession } from "next-auth/react";
-
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 
 export default function UserPreferenceForm() {
   const router = useRouter();
   const [step, setStep] = useState(1);
-  const [errors, setErrors] = useState<{ number: string }>({ number: '' });
-  const totalSteps = 3;
+  const [errors, setErrors] = useState({
+    number: '',
+    jeevanKaFunda: '',
+    iitjIs: '',
+    crazyMoment: '',
+    lifeTitle: '',
+  });
+  const totalSteps = 4;
 
   const [formData, setFormData] = useState({
     photo: null as File | null,
     photoPreview: "",
     number: "",
+    jeevanKaFunda: "",
+    iitjIs: "",
+    crazyMoment: "",
+    lifeTitle: "",
   });
 
   // Check if user has already completed preferences
@@ -66,81 +75,121 @@ export default function UserPreferenceForm() {
     }
   };
 
-
-const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-  const { name, value } = e.target;
-  
-  if (name === 'number') {
-    const numericValue = value.replace(/\D/g, '');
+  const validateWordCount = (value: string, field: string) => {
+    if (value.trim() === '') return '';
     
-    setFormData({
-      ...formData,
-      [name]: numericValue,
-    });
-
-    if (numericValue.length > 0 && numericValue.length !== 10) {
-      setErrors({ ...errors, number: 'Mobile number must be exactly 10 digits' });
-    } else {
-      setErrors({ ...errors, number: '' });
+    const wordCount = value.trim().split(/\s+/).length;
+    if (wordCount > 10) {
+      return `${field} must be 10 words or less`;
     }
-  } else {
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
-  }
-};
+    return '';
+  };
 
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    
+    if (name === 'number') {
+      const numericValue = value.replace(/\D/g, '');
+      
+      setFormData({
+        ...formData,
+        [name]: numericValue,
+      });
 
-  const handleNext = () => {
-    if (step < totalSteps) {
-      setStep(step + 1);
-    } else {
-      // Convert the image to base64 if it exists
-      if (formData.photo) {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          // Now send the base64 string to the server
-          fetch("/api/users/update-preference", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "Cache-Control": "no-cache",
-              Pragma: "no-cache",
-            },
-            body: JSON.stringify({
-              photoUrl: reader.result, // This will be a base64 string
-              number: formData.number,
-            }),
-            credentials: "include",
-          })
-            .then(async (response) => {
-              if (response.ok) {
-                await fetch("/api/users/change-preference", {
-                  method: "POST",
-                  headers: {
-                    "Content-Type": "application/json",
-                    "Cache-Control": "no-cache",
-                    Pragma: "no-cache",
-                  },
-                });
-                console.log("Preferences updated successfully");
-                router.push("/dashboard"); // Redirect immediately after confirmation
-              } else {
-                const errorData = await response.json();
-                console.error("Failed to update preferences:", errorData);
-              }
-            })
-            .catch((error) => {
-              console.error("Error updating preferences:", error);
-            });
-        };
-        reader.readAsDataURL(formData.photo);
+      if (numericValue.length > 0 && numericValue.length !== 10) {
+        setErrors({ ...errors, number: 'Mobile number must be exactly 10 digits' });
       } else {
-        console.error("No photo selected");
+        setErrors({ ...errors, number: '' });
       }
+    } else if (['jeevanKaFunda', 'iitjIs', 'crazyMoment', 'lifeTitle'].includes(name)) {
+      setFormData({
+        ...formData,
+        [name]: value,
+      });
+      
+      const errorMessage = validateWordCount(value, name);
+      setErrors({ ...errors, [name]: errorMessage });
+    } else {
+      setFormData({
+        ...formData,
+        [name]: value,
+      });
     }
   };
+
+const handleNext = () => {
+  if (step < totalSteps) {
+    setStep(step + 1);
+  } else {
+    // Convert the image to base64 if it exists
+    if (formData.photo) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        // Log the data being sent to the server for debugging
+        const requestData = {
+          photoUrl: reader.result, // This will be a base64 string
+          number: formData.number,
+        };
+
+        const requestDataWithText = {
+          jeevanKaFunda: formData.jeevanKaFunda,
+          iitjIs: formData.iitjIs,
+          crazyMoment: formData.crazyMoment,
+          lifeTitle: formData.lifeTitle
+        };
+        
+        fetch("/api/additional-info", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Cache-Control": "no-cache",
+            Pragma: "no-cache",
+          },
+          body: JSON.stringify(requestDataWithText),
+          credentials: "include",
+        })
+
+        // Now send the base64 string to the server
+        fetch("/api/users/update-preference", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Cache-Control": "no-cache",
+            Pragma: "no-cache",
+          },
+          body: JSON.stringify(requestData),
+          credentials: "include",
+        })
+          .then(async (response) => {
+            if (response.ok) {
+              const responseData = await response.json();
+              console.log("Server response:", responseData); // Log the server response
+              
+              await fetch("/api/users/change-preference", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  "Cache-Control": "no-cache",
+                  Pragma: "no-cache",
+                },
+              });
+              console.log("Preferences updated successfully");
+              router.push("/dashboard"); // Redirect immediately after confirmation
+            } else {
+              const errorData = await response.json();
+              console.error("Failed to update preferences:", errorData);
+            }
+          })
+          .catch((error) => {
+            console.error("Error updating preferences:", error);
+          });
+      };
+      reader.readAsDataURL(formData.photo);
+    } else {
+      console.error("No photo selected");
+    }
+  }
+};
 
   const handleBack = () => {
     if (step > 1) {
@@ -153,12 +202,31 @@ const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaE
       case 1:
         return !!formData.photo;
       case 2:
-        return !!formData.number;
+        return !!formData.number && errors.number === '';
       case 3:
+        // All question fields are filled and have no errors
+        const allFieldsFilled = 
+          !!formData.jeevanKaFunda && 
+          !!formData.iitjIs && 
+          !!formData.crazyMoment && 
+          !!formData.lifeTitle;
+        
+        const noErrors = 
+          errors.jeevanKaFunda === '' && 
+          errors.iitjIs === '' && 
+          errors.crazyMoment === '' && 
+          errors.lifeTitle === '';
+          
+        return allFieldsFilled && noErrors;
+      case 4:
         return true;
       default:
         return false;
     }
+  };
+
+  const getWordCount = (text: string) => {
+    return text.trim() ? text.trim().split(/\s+/).length : 0;
   };
 
   return (
@@ -169,7 +237,7 @@ const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaE
             {[...Array(totalSteps)].map((_, index) => (
               <div
                 key={index}
-                className={`h-2 w-1/5 rounded-full ${
+                className={`h-2 ${index === totalSteps - 1 ? "w-1/5" : "w-1/5"} rounded-full ${
                   step >= index + 1 ? "bg-blue-600" : "bg-gray-200"
                 } transition-colors duration-300 ${
                   index !== totalSteps - 1 ? "mr-1" : ""
@@ -183,6 +251,8 @@ const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaE
               ? "Upload Photo"
               : step === 2
               ? "Your Mobile Number"
+              : step === 3
+              ? "About You"
               : "Review & Submit"}
           </h2>
 
@@ -244,6 +314,92 @@ const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaE
 
           {step === 3 && (
             <div className="space-y-6 min-w-[450px] min-h-[300px]">
+              <div className="flex items-center gap-2 mb-2">
+                <BookOpen className="h-5 w-5 text-blue-600" />
+                <h3 className="text-lg font-medium">Your IITJ Story</h3>
+              </div>
+              <p className="text-sm text-gray-600 mb-4">
+                Share brief thoughts about your journey at IITJ. Each answer should be 10 words or less.
+              </p>
+              
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="jeevanKaFunda" className="text-sm font-medium flex justify-between">
+                    <span>Jeevan Ka Funda</span>
+                    <span className={`text-xs ${getWordCount(formData.jeevanKaFunda) > 10 ? 'text-red-500' : 'text-gray-500'}`}>
+                      {getWordCount(formData.jeevanKaFunda)}/10 words
+                    </span>
+                  </Label>
+                  <Textarea
+                    id="jeevanKaFunda"
+                    name="jeevanKaFunda"
+                    value={formData.jeevanKaFunda}
+                    onChange={handleInputChange}
+                    className="mt-1 bg-white border-gray-300"
+                    placeholder="Your life philosophy in a few words..."
+                  />
+                  {errors.jeevanKaFunda && <p className="text-red-500 text-xs mt-1">{errors.jeevanKaFunda}</p>}
+                </div>
+                
+                <div>
+                  <Label htmlFor="iitjIs" className="text-sm font-medium flex justify-between">
+                    <span>For me IITJ is</span>
+                    <span className={`text-xs ${getWordCount(formData.iitjIs) > 10 ? 'text-red-500' : 'text-gray-500'}`}>
+                      {getWordCount(formData.iitjIs)}/10 words
+                    </span>
+                  </Label>
+                  <Textarea
+                    id="iitjIs"
+                    name="iitjIs"
+                    value={formData.iitjIs}
+                    onChange={handleInputChange}
+                    className="mt-1 bg-white border-gray-300"
+                    placeholder="What IITJ means to you..."
+                  />
+                  {errors.iitjIs && <p className="text-red-500 text-xs mt-1">{errors.iitjIs}</p>}
+                </div>
+                
+                <div>
+                  <Label htmlFor="crazyMoment" className="text-sm font-medium flex justify-between">
+                    <span>Life ka Crazy moment</span>
+                    <span className={`text-xs ${getWordCount(formData.crazyMoment) > 10 ? 'text-red-500' : 'text-gray-500'}`}>
+                      {getWordCount(formData.crazyMoment)}/10 words
+                    </span>
+                  </Label>
+                  <Textarea
+                    id="crazyMoment"
+                    name="crazyMoment"
+                    value={formData.crazyMoment}
+                    onChange={handleInputChange}
+                    className="mt-1 bg-white border-gray-300"
+                    placeholder="A memorable crazy moment..."
+                  />
+                  {errors.crazyMoment && <p className="text-red-500 text-xs mt-1">{errors.crazyMoment}</p>}
+                </div>
+                
+                <div>
+                  <Label htmlFor="lifeTitle" className="text-sm font-medium flex justify-between">
+                    <span>Title for my life at IITJ</span>
+                    <span className={`text-xs ${getWordCount(formData.lifeTitle) > 10 ? 'text-red-500' : 'text-gray-500'}`}>
+                      {getWordCount(formData.lifeTitle)}/10 words
+                    </span>
+                  </Label>
+                  <Textarea
+                    id="lifeTitle"
+                    name="lifeTitle"
+                    value={formData.lifeTitle}
+                    onChange={handleInputChange}
+                    className="mt-1 bg-white border-gray-300"
+                    placeholder="If your IITJ life was a book title..."
+                  />
+                  {errors.lifeTitle && <p className="text-red-500 text-xs mt-1">{errors.lifeTitle}</p>}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {step === 4 && (
+            <div className="space-y-6 min-w-[450px] min-h-[300px]">
               <div className="bg-blue-50 p-4 rounded-lg">
                 <h3 className="font-medium text-blue-800 mb-2">Review Your Information</h3>
                 <p className="text-sm text-gray-700">
@@ -252,29 +408,42 @@ const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaE
                 </p>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <h4 className="font-medium text-gray-700">Photo</h4>
-                  {formData.photoPreview ? (
-                    <div className="relative w-20 h-20 rounded-full overflow-hidden mt-1">
-                      <Image
-                        src={formData.photoPreview}
-                        alt="Profile"
-                        fill
-                        className="object-cover"
-                      />
-                    </div>
-                  ) : <p className="text-sm text-red-500">No photo uploaded</p>}
-                </div>
-                
-                <div>
-                  <h4 className="font-medium text-gray-700">Mobile Number</h4>
-                  <p className="text-sm text-gray-600 mt-1">{formData.number || "No mobile number provided"}</p>
+              <div className="grid grid-cols-1 gap-4">
+                <div className="flex items-start gap-4">
+                  <div className="w-1/4">
+                    <h4 className="font-medium text-gray-700">Photo</h4>
+                    {formData.photoPreview ? (
+                      <div className="relative w-20 h-20 rounded-full overflow-hidden mt-1">
+                        <Image
+                          src={formData.photoPreview}
+                          alt="Profile"
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
+                    ) : <p className="text-sm text-red-500">No photo uploaded</p>}
+                  </div>
+                  
+                  <div className="w-3/4">
+                    <h4 className="font-medium text-gray-700">Mobile Number</h4>
+                    <p className="text-sm text-gray-600 mt-1">{formData.number || "No mobile number provided"}</p>
+                    
+                    <h4 className="font-medium text-gray-700 mt-4">Jeevan Ka Funda</h4>
+                    <p className="text-sm text-gray-600 mt-1">{formData.jeevanKaFunda || "Not provided"}</p>
+                    
+                    <h4 className="font-medium text-gray-700 mt-4">For me IITJ is</h4>
+                    <p className="text-sm text-gray-600 mt-1">{formData.iitjIs || "Not provided"}</p>
+                    
+                    <h4 className="font-medium text-gray-700 mt-4">Life ka Crazy moment</h4>
+                    <p className="text-sm text-gray-600 mt-1">{formData.crazyMoment || "Not provided"}</p>
+                    
+                    <h4 className="font-medium text-gray-700 mt-4">Title for my life at IITJ</h4>
+                    <p className="text-sm text-gray-600 mt-1">{formData.lifeTitle || "Not provided"}</p>
+                  </div>
                 </div>
               </div>
             </div>
           )}
-
 
           <div className="flex justify-between mt-6">
             {step > 1 ? (

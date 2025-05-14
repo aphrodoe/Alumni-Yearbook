@@ -9,8 +9,9 @@ import {
   SidebarProvider,
 } from "@/components/ui/sidebar";
 
+import AboutContent from "@/components/about-content";
 import FeedContent from "@/components/feed-content";
-import PDFViewer from "@/components/PDFViewer";
+import UpdateContent from "@/components/update-content";
 import ImageUploader from "@/components/image-uploader";
 import MessageBatchmates from "@/components/message-batchmates";
 import MessageJunior from "@/components/message-junior";
@@ -20,7 +21,7 @@ import { TeamSection } from "@/components/team-section";
 export default function Dashboard() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const [activeContent, setActiveContent] = useState<string>("feed");
+  const [activeContent, setActiveContent] = useState<string>("about");
   const [sectionUrl, setSectionUrl] = useState<string | null>(null);
 
   useEffect(() => {
@@ -40,8 +41,6 @@ export default function Dashboard() {
 
   const renderContent = () => {
     switch (activeContent) {
-      case "yearbook":
-        return <PDFViewer fileLocation={sectionUrl || ""} />;
       case "add":
         return <ImageUploader />;
       case "message_batchmate":
@@ -50,11 +49,16 @@ export default function Dashboard() {
         return <MessageJunior />;
       case "contact_us":
         return <ContactForm />;
+      case "update":
+        return <UpdateContent />;
       case "team":
         return <TeamSection />;
       case "feed":
-      default:
         return <FeedContent />;
+      case "about":
+        return <AboutContent />;
+      default:
+        return <AboutContent />;
     }
   };
 
