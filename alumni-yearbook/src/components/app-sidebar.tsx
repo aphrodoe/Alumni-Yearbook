@@ -13,6 +13,7 @@ import {
   LogOut,
   ChevronDown,
   User,
+  Users, 
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
@@ -119,6 +120,11 @@ export function AppSidebar({ children, onNavChange, activeContent }: AppSidebarP
       icon: Upload,
     },
     { id: "contact_us", label: "Contact Us", icon: Mail },
+    {
+      id: "team",
+      label: "Meet The Team",
+      icon: Users,
+    },
   ]
 
   const handleNavItemClick = (id: string, url?: string) => {

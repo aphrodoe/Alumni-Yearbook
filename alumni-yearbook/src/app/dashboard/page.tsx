@@ -15,6 +15,7 @@ import ImageUploader from "@/components/image-uploader";
 import MessageBatchmates from "@/components/message-batchmates";
 import MessageJunior from "@/components/message-junior";
 import ContactForm from "@/components/contact-form"; 
+import { TeamSection } from "@/components/team-section";
 
 export default function Dashboard() {
   const { data: session, status } = useSession();
@@ -49,6 +50,8 @@ export default function Dashboard() {
         return <MessageJunior />;
       case "contact_us":
         return <ContactForm />;
+      case "team":
+        return <TeamSection />;
       case "feed":
       default:
         return <FeedContent />;
