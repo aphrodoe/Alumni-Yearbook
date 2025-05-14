@@ -33,13 +33,7 @@ export function TeamSection() {
   const designers = [{ name: "Sumedha Singh", photoUrl: "/placeholder.jpg" }];
 
   return (
-    <div
-      className="relative bg-cover bg-center min-h-screen"
-      style={{
-        backgroundImage: "url('/IITJ_background.png')",
-      }}
-    >
-      <div className="max-w-6xl mx-auto p-6 space-y-8 bg-white bg-opacity-80 rounded-lg">
+      <div className="max-w-6xl mx-auto p-6 space-y-8  rounded-lg">
         <h1 className="text-4xl font-bold text-blue-900 text-center mb-8">
           Meet The Team
         </h1>
@@ -68,6 +62,6 @@ export function TeamSection() {
           </div>
         </div>
       </div>
-    </div>
+
   );
 }
