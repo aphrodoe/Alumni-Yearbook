@@ -1,15 +1,13 @@
 "use client"
 
-import type React from "react"
+import React from "react"
 import { useSession } from "next-auth/react"
-import { useRouter } from "next/navigation"
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback, useRef } from "react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { toast as sonnerToast } from "sonner"
 import { Toaster } from "@/components/ui/sonner"
-import { Send, Search, AlertCircle, ArrowLeft, MessageSquare } from "lucide-react"
-import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Send, Search, ArrowLeft, MessageSquare, Loader2 } from "lucide-react"
 import {
   Dialog,
   DialogContent,
@@ -25,7 +23,6 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card"
 type User = {
   email: string
   name: string
-  quote?: string
   profilePicture?: string
 }
 
@@ -36,9 +33,10 @@ type Message = {
   timestamp: Date
 }
 
+const preferenceCache = new Map<string, { photoUrl: string, timestamp: number }>();
+
 export default function MessageBatchmates() {
   const { data: session } = useSession()
-  // Remove the unused variables
   
   const [users, setUsers] = useState<User[]>([])
   const [filteredUsers, setFilteredUsers] = useState<User[]>([])
@@ -47,10 +45,25 @@ export default function MessageBatchmates() {
   const [messages, setMessages] = useState<Message[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [canMessage, setCanMessage] = useState(true)
   const [isMobileView, setIsMobileView] = useState(false)
   const [showUserList, setShowUserList] = useState(true)
   const [isMessageDialogOpen, setIsMessageDialogOpen] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+  const [page, setPage] = useState(1)
+  const [hasMore, setHasMore] = useState(true)
+  const [loadingMore, setLoadingMore] = useState(false)
+  
+  const observer = useRef<IntersectionObserver | null>(null)
+  const lastUserElementRef = useCallback((node: HTMLDivElement | null) => {
+    if (loadingMore) return
+    if (observer.current) observer.current.disconnect()
+    observer.current = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting && hasMore && !searchTerm) {
+        loadMoreUsers()
+      }
+    })
+    if (node) observer.current.observe(node)
+  }, [loadingMore, hasMore, searchTerm])
 
   useEffect(() => {
     const checkMobileView = () => {
@@ -65,55 +78,125 @@ export default function MessageBatchmates() {
   }, [])
 
   useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const response = await fetch("/api/users");
-        if (response.ok) {
-          const data = await response.json();
-          
-          const enhancedUsers = await Promise.all(
-            data.map(async (user: User) => {
-              try {
-                const prefResponse = await fetch(`/api/users/get-preference?email=${encodeURIComponent(user.email)}`);
-                if (prefResponse.ok) {
-                  const prefData = await prefResponse.json();
-                  return {
-                    ...user,
-                    quote: prefData.preferences?.quote || "No quote provided",
-                    profilePicture: prefData.preferences?.photoUrl || `/placeholder.svg?height=200&width=200`,
-                  };
-                }
-                return {
-                  ...user,
-                  quote: "No quote provided",
-                  profilePicture: `/placeholder.svg?height=200&width=200`,
-                };
-              } catch (error) {
-                console.error(`Error fetching preferences for ${user.email}:`, error);
-                return {
-                  ...user,
-                  quote: "No quote provided",
-                  profilePicture: `/placeholder.svg?height=200&width=200`,
-                };
-              }
-            })
-          );
-          
-          const filteredData = enhancedUsers.filter((user: User) => user.email !== session?.user?.email);
-          setUsers(filteredData);
-          applyFilters(filteredData, searchTerm);
-        }
-      } catch (error) {
-        console.error("Error fetching users:", error);
-        sonnerToast.error("Failed to fetch users");
-      }
-    };
-  
-    if (session) {
-      fetchUsers();
+    if (searchTerm) {
+      applyFilters(users, searchTerm)
+    } else {
+      setFilteredUsers(users.slice(0, page * 20))
     }
-  }, [session]);
-  
+  }, [searchTerm, users, page])
+
+  const fetchUserPreference = async (email: string): Promise<string> => {
+    const cached = preferenceCache.get(email)
+    const now = Date.now()
+    
+    if (cached && (now - cached.timestamp < 600000)) {
+      return cached.photoUrl
+    }
+    
+    try {
+      const prefResponse = await fetch(`/api/users/get-preference?email=${encodeURIComponent(email)}`)
+      if (prefResponse.ok) {
+        const prefData = await prefResponse.json()
+        const photoUrl = prefData.preferences?.photoUrl || `/placeholder.svg?height=200&width=200`
+        
+        preferenceCache.set(email, { 
+          photoUrl,
+          timestamp: now
+        })
+        
+        return photoUrl
+      }
+    } catch (error) {
+      console.error(`Error fetching preferences for ${email}:`, error)
+    }
+    
+    return `/placeholder.svg?height=200&width=200`
+  }
+
+  const fetchUsers = useCallback(async (initialLoad = false) => {
+    if (initialLoad) setIsLoading(true)
+    
+    try {
+      const response = await fetch(`/api/users?page=${initialLoad ? 1 : page}&limit=20&search=${encodeURIComponent(searchTerm)}`);
+      
+      if (response.ok) {
+        const data = await response.json();
+        const filteredData = data.users.filter((user: User) => user.email !== session?.user?.email);
+        
+        // For initial basic data (without profile pictures)
+        if (initialLoad) {
+          setUsers(filteredData);
+          setFilteredUsers(filteredData);
+          setIsLoading(false);
+          
+          // Then fetch profile pictures in the background
+          fetchProfilePictures(filteredData);
+        } else {
+          // For pagination loads
+          setUsers(prev => [...prev, ...filteredData]);
+          setFilteredUsers(prev => [...prev, ...filteredData]);
+        }
+        
+        // Check if we have more data to load
+        setHasMore(data.hasMore);
+      }
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      sonnerToast.error("Failed to fetch users");
+      setIsLoading(false);
+    }
+  }, [page, searchTerm, session]);
+
+  // Fetch profile pictures in the background to avoid blocking rendering
+  const fetchProfilePictures = async (userList: User[]) => {
+    const updatedUsers = [...userList];
+    
+    // Process in smaller batches to avoid overwhelming the server
+    const batchSize = 5;
+    for (let i = 0; i < updatedUsers.length; i += batchSize) {
+      const batch = updatedUsers.slice(i, i + batchSize);
+      
+      await Promise.all(
+        batch.map(async (user, index) => {
+          const position = i + index;
+          const photoUrl = await fetchUserPreference(user.email);
+          
+          // Update the user with profile picture
+          updatedUsers[position] = {
+            ...user,
+            profilePicture: photoUrl
+          };
+        })
+      );
+      
+      // Update state after each batch
+      setUsers([...updatedUsers]);
+      applyFilters([...updatedUsers], searchTerm);
+      
+      // Small delay between batches to reduce server load
+      if (i + batchSize < updatedUsers.length) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+    }
+  };
+
+  const loadMoreUsers = () => {
+    if (!hasMore || loadingMore || searchTerm) return
+    
+    setLoadingMore(true)
+    setPage(prevPage => prevPage + 1)
+    
+    // Fetch next page
+    fetchUsers(false).finally(() => {
+      setLoadingMore(false)
+    })
+  }
+
+  useEffect(() => {
+    if (session) {
+      fetchUsers(true)
+    }
+  }, [session, fetchUsers])
 
   useEffect(() => {
     const fetchMessagesAndCheckStatus = async () => {
@@ -134,11 +217,9 @@ export default function MessageBatchmates() {
         if (response.ok) {
           const data = await response.json()
           setMessages(data.messages)
-          setCanMessage(data.canMessage)
         }
       } catch (error) {
         console.error("Error fetching messages:", error)
-        sonnerToast.error("Failed to fetch messages")
       }
     }
 
@@ -146,26 +227,25 @@ export default function MessageBatchmates() {
   }, [selectedUser, session])
 
   const applyFilters = (userList: User[], search: string) => {
-    let result = [...userList]
-
-    // Filter by search term
-    if (search) {
-      const term = search.toLowerCase()
-      result = result.filter(
-        (user) => user.name.toLowerCase().includes(term) || user.email.toLowerCase().includes(term)
-      )
+    if (!search) {
+      setFilteredUsers(userList.slice(0, page * 20))
+      return
     }
-
+    
+    const term = search.toLowerCase()
+    const result = userList.filter(
+      (user) => user.name.toLowerCase().includes(term) || user.email.toLowerCase().includes(term)
+    )
+    
+    // For search results, don't apply pagination
     setFilteredUsers(result)
   }
-
-  useEffect(() => {
-    applyFilters(users, searchTerm);
-  }, [users, searchTerm]);
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const term = e.target.value.toLowerCase()
     setSearchTerm(term)
+    // Reset page when searching
+    setPage(1)
     applyFilters(users, term)
   }
 
@@ -174,11 +254,6 @@ export default function MessageBatchmates() {
 
     if (!message || !selectedUser || !session?.user?.email) {
       sonnerToast.error("Please select a user and type a message")
-      return
-    }
-
-    if (!canMessage) {
-      sonnerToast.error("You can only send one message to this user")
       return
     }
 
@@ -199,14 +274,9 @@ export default function MessageBatchmates() {
 
       if (response.ok) {
         const newMessage = await response.json()
-
         setMessages((prevMessages) => [...prevMessages, newMessage])
-
-        setCanMessage(false)
-
         sonnerToast.success("Message sent successfully")
         setMessage("")
-        setIsMessageDialogOpen(false)
       } else {
         sonnerToast.error("Failed to send message")
       }
@@ -231,36 +301,79 @@ export default function MessageBatchmates() {
     setSelectedUser(null)
   }
 
-  const renderUserCards = () => (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-4">
-      {filteredUsers.map((user) => (
-        <Card key={user.email} className="overflow-hidden hover:shadow-md transition-shadow">
-          <div className="aspect-square relative overflow-hidden">
-            <Avatar className="w-full h-full rounded-none">
-              <AvatarImage src={user.profilePicture} alt={user.name} className="object-cover" />
-              <AvatarFallback className="w-full h-full text-4xl">
-                {user.name
-                  .split(" ")
-                  .map((n) => n[0])
-                  .join("")}
-              </AvatarFallback>
-            </Avatar>
-          </div>
-          <CardContent className="p-4">
-            <h3 className="font-semibold text-lg truncate">{user.name}</h3>
-            <p className="text-sm text-muted-foreground truncate">{user.email}</p>
-            <p className="mt-2 text-sm italic line-clamp-3">&ldquo;{user.quote}&rdquo;</p>
-          </CardContent>
-          <CardFooter className="p-4 pt-0">
-            <Button variant="outline" className="w-full flex items-center gap-2" onClick={() => handleUserSelect(user)}>
-              <MessageSquare size={16} />
-              Message
-            </Button>
-          </CardFooter>
-        </Card>
-      ))}
+  // Use React.memo for UserCard to prevent unnecessary re-renders
+  const UserCard = React.memo(({ user, isLastElement = false }: { user: User, isLastElement?: boolean }) => (
+    <div 
+      ref={isLastElement ? lastUserElementRef : null}
+      className="h-full"
+    >
+      <Card className="overflow-hidden hover:shadow-md transition-shadow h-full">
+        <div className="aspect-square relative overflow-hidden">
+          <Avatar className="w-full h-full rounded-none">
+            <AvatarImage src={user.profilePicture} alt={user.name} className="object-cover" />
+            <AvatarFallback className="w-full h-full text-4xl">
+              {user.name
+                .split(" ")
+                .map((n) => n[0])
+                .join("")}
+            </AvatarFallback>
+          </Avatar>
+        </div>
+        <CardContent className="p-4">
+          <h3 className="font-semibold text-lg truncate">{user.name}</h3>
+          <p className="text-sm text-muted-foreground truncate">{user.email}</p>
+        </CardContent>
+        <CardFooter className="p-4 pt-0">
+          <Button 
+            variant="outline" 
+            className="w-full flex items-center gap-2" 
+            onClick={() => handleUserSelect(user)}
+          >
+            <MessageSquare size={16} />
+            Message
+          </Button>
+        </CardFooter>
+      </Card>
     </div>
-  )
+  ))
+
+  const renderUserCards = () => {
+    if (isLoading) {
+      return (
+        <div className="flex justify-center items-center h-64">
+          <div className="flex flex-col items-center gap-2">
+            <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+            <p className="text-sm text-muted-foreground">Loading users...</p>
+          </div>
+        </div>
+      )
+    }
+
+    if (filteredUsers.length === 0) {
+      return (
+        <div className="flex justify-center items-center h-64">
+          <p className="text-muted-foreground">No users found</p>
+        </div>
+      )
+    }
+
+    return (
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-4">
+        {filteredUsers.map((user, index) => (
+          <UserCard 
+            key={user.email} 
+            user={user} 
+            isLastElement={index === filteredUsers.length - 1}
+          />
+        ))}
+        {loadingMore && (
+          <div className="col-span-full flex justify-center py-4">
+            <Loader2 className="h-6 w-6 animate-spin text-blue-500" />
+          </div>
+        )}
+      </div>
+    )
+  }
 
   if (isMobileView) {
     return (
@@ -303,52 +416,43 @@ export default function MessageBatchmates() {
               </div>
             </header>
 
-            <div className="p-4 w-full">
-              <Alert className="w-full">
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>
-                  You can message a person once. This message will appear in their personalised yearbook.
-                </AlertDescription>
-              </Alert>
-            </div>
-
             <div className="flex-grow overflow-y-auto p-4 space-y-2 w-full">
-              {messages.map((msg, index) => (
-                <div
-                  key={index}
-                  className={`flex ${msg.email_sender === session?.user?.email ? "justify-end" : "justify-start"} w-full`}
-                >
+              {messages.length > 0 ? (
+                messages.map((msg, index) => (
                   <div
-                    className={`max-w-[70%] p-2 rounded-lg ${
-                      msg.email_sender === session?.user?.email ? "bg-blue-500 text-white" : "bg-gray-200 text-black"
-                    }`}
+                    key={index}
+                    className={`flex ${msg.email_sender === session?.user?.email ? "justify-end" : "justify-start"} w-full`}
                   >
-                    {msg.message}
+                    <div
+                      className={`max-w-[70%] p-2 rounded-lg ${
+                        msg.email_sender === session?.user?.email ? "bg-blue-500 text-white" : "bg-gray-200 text-black"
+                      }`}
+                    >
+                      {msg.message}
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))
+              ) : (
+                <p className="text-center text-muted-foreground py-4">No messages yet</p>
+              )}
             </div>
 
             <form onSubmit={handleSubmit} className="p-4 border-t bg-white w-full">
               <div className="flex items-center w-full">
-                <Input
-                  placeholder="Type a message"
+                <textarea
+                  placeholder="Write a heartfelt message for your classmate's yearbook..."
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
-                  className="flex-grow mr-2"
-                  disabled={!canMessage}
+                  className="border border-gray-300 rounded-md p-3 w-full min-h-[120px] bg-white focus:border-blue-400 focus:ring-1 focus:ring-blue-400"
                 />
                 <Button
                   type="submit"
-                  disabled={isSubmitting || !message || !canMessage}
-                  className="flex items-center justify-center"
+                  disabled={isSubmitting || !message}
+                  className="flex items-center justify-center ml-2"
                 >
                   <Send size={20} />
                 </Button>
               </div>
-              {!canMessage && (
-                <p className="text-sm text-red-500 mt-2">You have already sent a message to this user</p>
-              )}
             </form>
           </div>
         )}
@@ -358,13 +462,15 @@ export default function MessageBatchmates() {
           onOpenChange={(open) => {
             setIsMessageDialogOpen(open);
             if (!open) {
-              // Reset to user list when dialog is closed
-              setShowUserList(true);
-              setSelectedUser(null);
+              setMessage("");
+              if (isMobileView) {
+                setShowUserList(true);
+                setSelectedUser(null);
+              }
             }
           }}
         >
-          <DialogContent className="sm:max-w-md bg-white border border-gray-200 shadow-lg">
+          <DialogContent className="sm:max-w-xl md:max-w-2xl bg-white border border-gray-200 shadow-lg max-h-[80vh]">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2 text-gray-800">
                 <Avatar className="h-8 w-8">
@@ -379,7 +485,7 @@ export default function MessageBatchmates() {
                 Message to {selectedUser?.name}
               </DialogTitle>
               <DialogDescription className="text-gray-500">
-                This message will appear in their personalised yearbook. You can only send one message to each person.
+                This message will appear in your and their personalised yearbook.
               </DialogDescription>
             </DialogHeader>
             
@@ -408,20 +514,12 @@ export default function MessageBatchmates() {
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid gap-4">
-                <Input
-                  placeholder="Type your message..."
+                <textarea
+                  placeholder="Write a heartfelt message for your classmate's yearbook..."
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
-                  disabled={!canMessage}
-                  className="border-gray-300 bg-white"
+                  className="border border-gray-300 rounded-md p-3 w-full min-h-[120px] bg-white focus:border-blue-400 focus:ring-1 focus:ring-blue-400"
                 />
-
-                {!canMessage && (
-                  <Alert variant="destructive" className="bg-red-50 border-red-200 text-red-600">
-                    <AlertCircle className="h-4 w-4" />
-                    <AlertDescription>You have already sent a message to this user</AlertDescription>
-                  </Alert>
-                )}
               </div>
 
               <DialogFooter className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
@@ -432,10 +530,17 @@ export default function MessageBatchmates() {
                 </DialogClose>
                 <Button 
                   type="submit" 
-                  disabled={isSubmitting || !message || !canMessage} 
+                  disabled={isSubmitting || !message} 
                   className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white"
                 >
-                  Send Message
+                  {isSubmitting ? (
+                    <div className="flex items-center">
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Sending...
+                    </div>
+                  ) : (
+                    "Send Message"
+                  )}
                 </Button>
               </DialogFooter>
             </form>
@@ -463,7 +568,7 @@ export default function MessageBatchmates() {
       </div>
 
       <Dialog open={isMessageDialogOpen} onOpenChange={setIsMessageDialogOpen}>
-        <DialogContent className="sm:max-w-md bg-white border border-gray-200 shadow-lg">
+        <DialogContent className="sm:max-w-xl md:max-w-2xl bg-white border border-gray-200 shadow-lg max-h-[80vh]">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-gray-800">
               <Avatar className="h-8 w-8">
@@ -478,7 +583,7 @@ export default function MessageBatchmates() {
               Message to {selectedUser?.name}
             </DialogTitle>
             <DialogDescription className="text-gray-500">
-              This message will appear in their personalised yearbook. You can only send one message to each person.
+              These messages will appear in your and their personalised yearbook.
             </DialogDescription>
           </DialogHeader>
 
@@ -505,24 +610,14 @@ export default function MessageBatchmates() {
             )}
           </div>
 
-
-
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid gap-4">
-              <Input
-                placeholder="Type your message..."
+              <textarea
+                placeholder="Write a heartfelt message for your classmate's yearbook..."
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
-                disabled={!canMessage}
-                className="border-gray-300 bg-white"
+                className="border border-gray-300 rounded-md p-3 w-full min-h-[120px] bg-white focus:border-blue-400 focus:ring-1 focus:ring-blue-400"
               />
-
-              {!canMessage && (
-                <Alert variant="destructive" className="bg-red-50 border-red-200 text-red-600">
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertDescription>You have already sent a message to this user</AlertDescription>
-                </Alert>
-              )}
             </div>
 
             <DialogFooter className="flex justify-end space-x-2">
@@ -533,10 +628,17 @@ export default function MessageBatchmates() {
               </DialogClose>
               <Button 
                 type="submit" 
-                disabled={isSubmitting || !message || !canMessage} 
+                disabled={isSubmitting || !message} 
                 className="bg-blue-600 hover:bg-blue-700 text-white"
               >
-                Send Message
+                {isSubmitting ? (
+                  <div className="flex items-center">
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Sending...
+                  </div>
+                ) : (
+                  "Send Message"
+                )}
               </Button>
             </DialogFooter>
           </form>

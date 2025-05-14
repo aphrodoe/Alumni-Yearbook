@@ -10,11 +10,7 @@ const UserPreferenceSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  quote: {
-    type: String,
-    required: true,
-  },
-  clubs: {
+  number: {
     type: String,
     required: true,
   },

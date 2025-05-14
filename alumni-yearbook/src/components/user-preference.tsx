@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { Upload, Quote, ChevronLeft, ChevronRight, Check } from "lucide-react"; 
+import { Upload, Quote, ChevronLeft, ChevronRight, Check, FolderInputIcon } from "lucide-react"; 
 import { getSession } from "next-auth/react";
 
 import { Button } from "@/components/ui/button";
@@ -15,13 +15,13 @@ import { Label } from "@/components/ui/label";
 export default function UserPreferenceForm() {
   const router = useRouter();
   const [step, setStep] = useState(1);
-  const totalSteps = 4;
+  const [errors, setErrors] = useState<{ number: string }>({ number: '' });
+  const totalSteps = 3;
 
   const [formData, setFormData] = useState({
     photo: null as File | null,
     photoPreview: "",
-    quote: "",
-    clubs: "",
+    number: "",
   });
 
   // Check if user has already completed preferences
@@ -66,13 +66,31 @@ export default function UserPreferenceForm() {
     }
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
+
+const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const { name, value } = e.target;
+  
+  if (name === 'number') {
+    const numericValue = value.replace(/\D/g, '');
+    
+    setFormData({
+      ...formData,
+      [name]: numericValue,
+    });
+
+    if (numericValue.length > 0 && numericValue.length !== 10) {
+      setErrors({ ...errors, number: 'Mobile number must be exactly 10 digits' });
+    } else {
+      setErrors({ ...errors, number: '' });
+    }
+  } else {
     setFormData({
       ...formData,
       [name]: value,
     });
-  };
+  }
+};
+
 
   const handleNext = () => {
     if (step < totalSteps) {
@@ -92,8 +110,7 @@ export default function UserPreferenceForm() {
             },
             body: JSON.stringify({
               photoUrl: reader.result, // This will be a base64 string
-              quote: formData.quote,
-              clubs: formData.clubs,
+              number: formData.number,
             }),
             credentials: "include",
           })
@@ -136,10 +153,8 @@ export default function UserPreferenceForm() {
       case 1:
         return !!formData.photo;
       case 2:
-        return !!formData.quote;
+        return !!formData.number;
       case 3:
-        return !!formData.clubs;
-      case 4:
         return true;
       default:
         return false;
@@ -167,14 +182,12 @@ export default function UserPreferenceForm() {
             {step === 1
               ? "Upload Photo"
               : step === 2
-              ? "Your Quote"
-              : step === 3
-              ? "Extracurricular Activities"
+              ? "Your Mobile Number"
               : "Review & Submit"}
           </h2>
 
           {step === 1 && (
-            <div className="space-y-4">
+            <div className="space-y-4 min-w-[450px] min-h-[300px] flex flex-col items-center justify-center">
               <div className="flex flex-col items-center justify-center">
                 {formData.photoPreview ? (
                   <div className="relative w-40 h-40 rounded-full overflow-hidden mb-4 border-4 border-blue-200 shadow-lg">
@@ -211,53 +224,31 @@ export default function UserPreferenceForm() {
           )}
 
           {step === 2 && (
-            <div className="space-y-4">
+            <div className="space-y-4 min-w-[450px] min-h-[300px] flex flex-col">
               <div className="flex items-center gap-2 mb-4">
                 <Quote className="h-5 w-5 text-blue-600" />
-                <Label htmlFor="quote" className="text-lg font-medium">Your Yearbook Quote</Label>
+                <Label htmlFor="number" className="text-lg font-medium">Your Mobile Number</Label>
               </div>
-              <Textarea
-                id="quote"
-                name="quote"
-                value={formData.quote}
+              <Input
+                id="number"
+                name="number"
+                value={formData.number}
                 onChange={handleInputChange}
-                placeholder="Share a memorable quote that represents your journey..."
-                className="min-h-[150px] bg-white border-gray-300"
+                className="bg-white border-gray-300"
+                type="tel"
+                placeholder="Enter your mobile number"
               />
-              <p className="text-sm text-gray-500">
-                This quote will appear in your yearbook profile and be visible to your classmates. 
-                Make it meaningful and representative of your time at the institution. Or just a funny one!
-              </p>
+              {errors.number && <p className="text-red-500 text-sm mt-1">{errors.number}</p>}
             </div>
           )}
 
           {step === 3 && (
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="clubs">Clubs & Activities</Label>
-                <Textarea
-                  id="clubs"
-                  name="clubs"
-                  value={formData.clubs}
-                  onChange={handleInputChange}
-                  placeholder="List your clubs, activities, sports teams, and other extracurricular involvements..."
-                  className="min-h-[150px] bg-white border-gray-300"
-                />
-              </div>
-              <p className="text-sm text-gray-500">
-                Share the extracurricular activities that made your time at school memorable. 
-                Leave a message for any club/society you were part of.
-              </p>
-            </div>
-          )}
-
-          {step === 4 && (
-            <div className="space-y-6">
+            <div className="space-y-6 min-w-[450px] min-h-[300px]">
               <div className="bg-blue-50 p-4 rounded-lg">
                 <h3 className="font-medium text-blue-800 mb-2">Review Your Information</h3>
                 <p className="text-sm text-gray-700">
                   Please review the information you've provided. Once submitted, this information will be 
-                  used in your yearbook profile and will be visible to other students.
+                  used in your yearbook profile. It can be updated later if needed.
                 </p>
               </div>
               
@@ -277,17 +268,13 @@ export default function UserPreferenceForm() {
                 </div>
                 
                 <div>
-                  <h4 className="font-medium text-gray-700">Quote</h4>
-                  <p className="text-sm text-gray-600 mt-1">{formData.quote || "No quote provided"}</p>
+                  <h4 className="font-medium text-gray-700">Mobile Number</h4>
+                  <p className="text-sm text-gray-600 mt-1">{formData.number || "No mobile number provided"}</p>
                 </div>
-              </div>
-              
-              <div className="space-y-2">
-                <h4 className="font-medium text-gray-700">Extracurricular Activities</h4>
-                <p className="text-sm text-gray-600">{formData.clubs || "No activities specified"}</p>
               </div>
             </div>
           )}
+
 
           <div className="flex justify-between mt-6">
             {step > 1 ? (
