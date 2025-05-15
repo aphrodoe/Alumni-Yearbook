@@ -25,9 +25,12 @@ const FeedContent = () => {
   const [error, setError] = useState<string | null>(null);
   const [expandedView, setExpandedView] = useState<boolean>(true);
 
-  const fetchPolls = async () => {
+  const fetchPolls = async (preventScroll = false) => {
     try {
-      setLoading(true);
+      // Only set loading if not preventing scroll
+      if (!preventScroll) {
+        setLoading(true);
+      }
       const response = await axios.get('/api/polls');
       setPolls(response.data);
       setError(null);
@@ -35,12 +38,14 @@ const FeedContent = () => {
       setError('Failed to fetch polls');
       console.error(err);
     } finally {
-      setLoading(false);
+      if (!preventScroll) {
+        setLoading(false);
+      }
     }
   };
 
   useEffect(() => {
-    fetchPolls();
+    fetchPolls(); // Initial load should show loading state
   }, []);
 
   const container = {
@@ -121,7 +126,10 @@ const FeedContent = () => {
         >
           {polls.map((poll) => (
             <motion.div key={poll._id} variants={item}>
-              <PollComponent poll={poll} onVote={fetchPolls} />
+              <PollComponent 
+                poll={poll} 
+                onVote={() => fetchPolls(true)} // Pass true to prevent scroll
+              />
             </motion.div>
           ))}
         </motion.div>

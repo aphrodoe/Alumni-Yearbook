@@ -189,7 +189,7 @@ const PollComponent = ({ poll, onVote }: { poll: Poll; onVote: () => void }) => 
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
         >
-          Thanks for voting! Your opinion matters.
+          Thanks for voting! 
         </motion.div>
       )}
     </motion.div>

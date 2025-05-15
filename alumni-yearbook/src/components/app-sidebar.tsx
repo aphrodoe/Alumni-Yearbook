@@ -29,6 +29,9 @@ import {
   SidebarProvider,
 } from "@/components/ui/sidebar"
 
+import { Great_Vibes } from "next/font/google"
+const cursiveFont = Great_Vibes({ subsets: ["latin"], weight: ["400"] })
+
 interface AppSidebarProps {
   children: React.ReactNode;
   onNavChange: (content: string, url?: string) => void;
@@ -98,7 +101,10 @@ export function AppSidebar({ children, onNavChange, activeContent }: AppSidebarP
       {/* Mobile Header */}
       <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-white shadow-md p-4">
         <div className="flex justify-between items-center">
-          <h1 className="text-xl font-bold text-blue-600">One Last Dance: Yearbook</h1>
+          <h1 className="text-xl font-bold text-blue-600">
+            <span className={`${cursiveFont.className} text-3xl`}>One Last Dance</span>
+            <span className="text-xl">: Yearbook</span>
+          </h1>
           <Button
             variant="ghost"
             size="icon"
@@ -165,7 +171,9 @@ export function AppSidebar({ children, onNavChange, activeContent }: AppSidebarP
         <SidebarProvider>
           <Sidebar className="hidden md:flex border-r border-blue-100 bg-white shadow-sm">
             <SidebarHeader className="p-4 border-b border-blue-100">
-              <h1 className="text-xl font-bold text-blue-600">One Last Dance</h1>
+              <h1 className="text-xl font-bold text-blue-600">
+                <span className={`${cursiveFont.className} text-3xl`}>One Last Dance</span>
+              </h1>
               <p className="text-sm text-gray-500">Class of 2025 Yearbook</p>
             </SidebarHeader>
             <SidebarContent className="py-4">

@@ -21,6 +21,16 @@ export default function AboutContent() {
         "The yearbook 2025 is a time capsule of your unforgettable journey at IITJ. It will feature your photo and some quirky infomation about you. Relive the best moments of hostel and campus life, captured through candid snapshots and batch photoshoot images. Most importantly, it will hold heartfelt messages from your batchmates-words that will bring back memories long after graduation. This yearbook isn't just a book, it's your IITJ story, preserved forever.",
     },
     {
+      question: "What is the feed section about?",
+      answer:
+        "The feed is a space where you can reflect on the little moments that make up life at IIT Jodhpur — through simple, relatable polls. From midnight mess runs to the struggle of 8 a.m. lectures, it’s a place to capture what it feels like to be here, right now. One day, you might look back and smile at these small, shared memories.",
+    },
+    {
+      question: "Where can i add my photos for the yearbook?",
+      answer:
+        "You can add your photos in the 'Upload memories' section of the portal. You can upload your candid photos, batch photoshoot images, and any other memorable moments you want to include in the yearbook. Just make sure to follow the guidelines for photo uploads to ensure they fit well in the yearbook layout.",
+    },
+    {
       question: "Can I message my batchmates and juniors?",
       answer:
         "Absolutely! You can send messages to your batchmates and juniors anytime. Your messages will be preserved and included in their yearbook, making them a lasting part of their graduation memories and adding an extra layer of meaning to their graduation celebrations. Whether it's a heartfelt note, words of encouragement, or a fun memory, your message will be a keepsake they'll treasure forever.",
