@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import connectToDatabase from "@/lib/mongodb";
-import UserPreference from "@/app/models/UserPreference";
+import UserAddInfo from "@/app/models/UserAddInfo";
 
 export async function GET() {
   const session = await getServerSession(authOptions);
@@ -13,22 +13,24 @@ export async function GET() {
   try {
     await connectToDatabase();
 
-    const userPreference = await UserPreference.findOne({
+    const userAddInfo = await UserAddInfo.findOne({
       email: session.user.email,
     });
 
-    if (!userPreference) {
-      return NextResponse.json({ message: "User preferences not found" }, { status: 404 });
+    if (!userAddInfo) {
+      return NextResponse.json({ message: "User additional info not found" }, { status: 404 });
     }
 
     return NextResponse.json({
-      photoUrl: userPreference.photoUrl,
-      number: userPreference.number,
+      jeevanKaFunda: userAddInfo.jeevanKaFunda,
+      iitjIs: userAddInfo.iitjIs,
+      crazyMoment: userAddInfo.crazyMoment,
+      lifeTitle: userAddInfo.lifeTitle,
     });
   } catch (error) {
-    console.error("Error fetching user preferences:", error);
+    console.error("Error fetching user additional info:", error);
     return NextResponse.json(
-      { message: "Error fetching user preferences", error: (error as Error).message },
+      { message: "Error fetching user additional info", error: (error as Error).message },
       { status: 500 }
     );
   }

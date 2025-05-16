@@ -75,20 +75,7 @@ const FeedContent = () => {
           <BarChart2 className="mr-2 h-6 w-6 text-blue-500" />
           College Life Polls
         </h2>
-        <button 
-          onClick={() => setExpandedView(!expandedView)}
-          className="flex items-center text-sm bg-blue-50 hover:bg-blue-100 px-3 py-1 rounded-full transition-colors"
-        >
-          {expandedView ? (
-            <>
-              <ChevronUp className="h-4 w-4 mr-1" /> Collapse
-            </>
-          ) : (
-            <>
-              <ChevronDown className="h-4 w-4 mr-1" /> Expand
-            </>
-          )}
-        </button>
+        
       </motion.div>
       
       {error && (
