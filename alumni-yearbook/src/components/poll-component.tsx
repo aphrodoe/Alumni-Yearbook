@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import axios from 'axios';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, ThumbsUp, Award, Zap } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -20,10 +20,27 @@ interface Poll {
   totalVotes: number;
 }
 
+const SparkleEffect = () => {
+  return (
+    <motion.div
+      initial={{ scale: 0, opacity: 1 }}
+      animate={{ scale: 1.5, opacity: 0 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.5 }}
+      className="absolute inset-0 z-10"
+    >
+      <div className="absolute inset-0 flex items-center justify-center">
+        <Sparkles className="h-8 w-8 text-yellow-400" />
+      </div>
+    </motion.div>
+  );
+};
+
 const PollComponent = ({ poll, onVote }: { poll: Poll; onVote: () => void }) => {
   const [voted, setVoted] = useState<boolean>(false);
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [isAnimating, setIsAnimating] = useState<boolean>(false);
+  const [showSparkle, setShowSparkle] = useState(false);
   const { data: session } = useSession();
   
   // Check if user has already voted
@@ -46,33 +63,45 @@ const PollComponent = ({ poll, onVote }: { poll: Poll; onVote: () => void }) => 
   }, [poll._id, session?.user?.email]);
 
   const handleVote = async (optionId: string) => {
-    if (voted) return;
-    
     setIsAnimating(true);
+    setShowSparkle(true);
     
     try {
       await axios.post('/api/polls/vote', {
         pollId: poll._id,
         optionId,
-        userEmail: session?.user?.email
+        userEmail: session?.user?.email,
+        previousVote: selectedOption
+      });
+      
+      // Always show sparkle effect when voting
+      setShowSparkle(true);
+      confetti({
+        particleCount: 50, // Reduced for vote changes
+        spread: 45,
+        origin: { y: 0.6 }
       });
       
       setVoted(true);
       setSelectedOption(optionId);
       
-      // Trigger confetti effect
-      confetti({
-        particleCount: 100,
-        spread: 70,
-        origin: { y: 0.6 }
-      });
+      // Larger confetti only for first vote
+      if (!voted) {
+        confetti({
+          particleCount: 100,
+          spread: 70,
+          origin: { y: 0.6 }
+        });
+      }
       
-      onVote(); // Trigger refetch of polls
+      onVote();
     } catch (error) {
       console.error('Error submitting vote:', error);
     } finally {
+      // Reset animation states after a delay
       setTimeout(() => {
         setIsAnimating(false);
+        setShowSparkle(false);
       }, 1000);
     }
   };
@@ -125,12 +154,7 @@ const PollComponent = ({ poll, onVote }: { poll: Poll; onVote: () => void }) => 
             transition={{ type: "spring", stiffness: 400, damping: 10 }}
           >
             {voted ? (
-              <motion.div 
-                className="relative h-10 border rounded-md overflow-hidden"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.5 }}
-              >
+              <motion.div className="relative h-10 border rounded-md overflow-hidden">
                 {/* Background bar representing percentage */}
                 <motion.div 
                   className={`absolute h-full ${
@@ -145,7 +169,9 @@ const PollComponent = ({ poll, onVote }: { poll: Poll; onVote: () => void }) => 
                 />
                 
                 {/* Text container with full width */}
-                <div className="absolute inset-0 flex items-center justify-between px-4 w-full">
+                <div className="absolute inset-0 flex items-center justify-between px-4 w-full cursor-pointer" 
+                  onClick={() => handleVote(option.id)}
+                >
                   <span className={`flex items-center ${selectedOption === option.id ? 'text-white' : 'text-black'}`}>
                     {getOptionEmoji(option.text)} <span className="ml-2">{option.text}</span>
                     {mostVoted && mostVoted.id === option.id && (
@@ -153,20 +179,23 @@ const PollComponent = ({ poll, onVote }: { poll: Poll; onVote: () => void }) => 
                     )}
                   </span>
                   <span className="text-sm ml-2 font-medium">
-                    {option.votes} votes ({calculatePercentage(option.votes)}%)
+                    {calculatePercentage(option.votes)}%
                   </span>
                 </div>
               </motion.div>
             ) : (
               <motion.button
                 onClick={() => handleVote(option.id)}
-                className="w-full text-left p-3 border border-gray-300 rounded-md hover:bg-blue-50 transition flex items-center justify-between group"
+                className="w-full text-left p-3 border border-gray-300 rounded-md hover:bg-blue-50 transition flex items-center justify-between group relative overflow-hidden"
                 whileTap={{ scale: 0.98 }}
               >
                 <span className="flex items-center">
                   {getOptionEmoji(option.text)} <span className="ml-2">{option.text}</span>
                 </span>
                 <ThumbsUp className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity text-blue-500" />
+                <AnimatePresence>
+                  {showSparkle && selectedOption === option.id && <SparkleEffect />}
+                </AnimatePresence>
               </motion.button>
             )}
           </motion.div>

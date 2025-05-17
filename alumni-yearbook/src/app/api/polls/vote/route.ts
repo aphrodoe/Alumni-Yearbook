@@ -16,22 +16,31 @@ export async function POST(request: Request) {
       );
     }
     
-    const existingVote = await Vote.findOne({
-      pollId,
-      userEmail
-    });
-    
-    if (existingVote) {
-      return NextResponse.json(
-        { error: 'You have already voted on this poll' },
-        { status: 400 }
-      );
-    }
-    
     const session = await mongoose.startSession();
     session.startTransaction();
     
     try {
+      // Check for existing vote
+      const existingVote = await Vote.findOne({
+        pollId,
+        userEmail
+      }).session(session);
+      
+      if (existingVote) {
+        // Decrement the old vote
+        await Poll.findOneAndUpdate(
+          { _id: pollId, "options.id": existingVote.optionId },
+          { 
+            $inc: { 
+              "options.$.votes": -1,
+              totalVotes: -1
+            } 
+          },
+          { session }
+        );
+      }
+      
+      // Add the new vote
       const updatedPoll = await Poll.findOneAndUpdate(
         { _id: pollId, "options.id": optionId },
         { 
@@ -47,16 +56,22 @@ export async function POST(request: Request) {
         throw new Error('Poll or option not found');
       }
       
-      await Vote.create([{
-        pollId,
-        optionId,
-        userEmail,
-        createdAt: new Date()
-      }], { session });
+      // Update or create vote record
+      await Vote.findOneAndUpdate(
+        { pollId, userEmail },
+        {
+          optionId,
+          updatedAt: new Date()
+        },
+        { upsert: true, session }
+      );
       
       await session.commitTransaction();
-      
-      return NextResponse.json({ success: true, poll: updatedPoll });
+      return NextResponse.json({ 
+        success: true, 
+        poll: updatedPoll,
+        changed: !!existingVote 
+      });
     } catch (error) {
       await session.abortTransaction();
       throw error;

@@ -25,14 +25,20 @@ export async function GET(request: Request) {
   try {
     await connectToDatabase();
     
+    interface VoteType {
+      optionId: string;
+      updatedAt: Date;
+    }
+
     const vote = await Vote.findOne({
       pollId,
       userEmail
-    });
+    }).lean() as VoteType | null;
     
     return NextResponse.json({
       hasVoted: !!vote,
-      optionId: vote ? vote.optionId : null
+      optionId: vote ? vote.optionId : null,
+      lastVoted: vote ? vote.updatedAt : null
     });
   } catch (error) {
     console.error('Database error:', error);
