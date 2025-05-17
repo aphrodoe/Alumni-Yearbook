@@ -28,7 +28,7 @@ export default function AboutContent() {
     {
       question: "Where can i add my photos for the yearbook?",
       answer:
-        "You can add your photos in the 'Upload memories' section of the portal. You can upload your candid photos, batch photoshoot images, and any other memorable moments you want to include in the yearbook. Just make sure to follow the guidelines for photo uploads to ensure they fit well in the yearbook layout.",
+        "You can add your photos in the 'Upload memories' section of the portal. You can upload your candid photos, batch photoshoot images, and any other memorable moments you want to include in the yearbook.",
     },
     {
       question: "Can I message my batchmates and juniors?",
@@ -47,25 +47,36 @@ export default function AboutContent() {
       <div className="max-w-6xl mx-auto p-6 space-y-8 rounded-lg">
         {/* Logo Section */}
         <div className="flex justify-between items-center">
-          <div className="relative w-20 h-20 sm:w-40 sm:h-40">
+          <a 
+            href="https://iitj.ac.in/" 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            className="relative w-20 h-20 sm:w-40 sm:h-40"
+          >
             <Image
               src="/IITJ_logo.png"
               alt="IITJ Logo"
               fill
-              className="object-contain"
+              className="object-contain hover:opacity-80 transition-opacity"
             />
-          </div>
+          </a>
 
           <h1 className="text-3xl sm:text-6xl font-bold text-blue-900">YEARBOOK 2025</h1>
 
-          <div className="relative w-20 h-20 sm:w-40 sm:h-40"> 
-            <Image
-              src="/SAA_logo.png"
-              alt="SAA Logo"
-              fill
-              className="object-contain"
-            />
-          </div>
+          <a 
+  href="https://saa.iitj.ac.in/home.html" 
+  target="_blank" 
+  rel="noopener noreferrer" 
+  className="relative w-20 h-20 sm:w-40 sm:h-40"
+>
+  <Image
+    src="/SAA_logo.png"
+    alt="SAA Logo"
+    fill
+    className="object-contain hover:opacity-80 transition-opacity"
+  />
+</a>
+
         </div>
 
         {/* Heading Section */}
@@ -76,16 +87,16 @@ export default function AboutContent() {
           </h1>
 
           <p className="text-lg text-gray-700 leading-relaxed">
-            A yearbook is not just a collection of photos and names—it’s a time
-            capsule of unforgettable moments, friendships, and achievements that
-            define your journey. It captures the late-night coding marathons,
-            thrilling project successes, endless brainstorming sessions, birthday
-            bashes, and the camaraderie that made it all worthwhile. It’s a
-            tribute to the challenges you conquered, the knowledge you gained,
-            and most importantly, the friends you made along the way, and the
-            memories you created along the way. Years from now, when you flip
-            through its pages, it won’t just remind you of what you studied, but
-            of the people, experiences, and lessons that shaped your future.
+            A yearbook is not just a collection of photos and names—it's a time capsule of unforgettable moments, friendships, and achievements that define your journey. It captures the late-night coding marathons, thrilling project successes, endless brainstorming sessions, birthday bashes, and the camaraderie that made it all worthwhile. It's a tribute to the challenges you conquered, the knowledge you gained, and most importantly, the friends you made and the memories you created along the way. This website, an initiative by the{" "}
+            <a 
+              href="https://saa.iitj.ac.in/home.html"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 hover:text-blue-800 underline"
+            >
+              Society of Alumni Affairs, IIT Jodhpur
+            </a>
+            , aims to digitize the traditional yearbook experience for a technical college—preserving the spirit of these formative years in a way that lasts forever. Years from now, when you flip through its pages, it won't just remind you of what you studied, but of the people, experiences, and lessons that shaped your future.
           </p>
         </div>
 
