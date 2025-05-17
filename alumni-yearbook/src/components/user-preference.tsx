@@ -319,7 +319,7 @@ const handleNext = () => {
                 <h3 className="text-lg font-medium">Your IITJ Story</h3>
               </div>
               <p className="text-sm text-gray-600 mb-4">
-                Share brief thoughts about your journey at IITJ. Each answer should be 10 words or less.
+                Please share brief thoughts about your journey at IIT Jodhpur. Each answer should be less than 10 words which will be further used in the yearbook.
               </p>
               
               <div className="space-y-4">

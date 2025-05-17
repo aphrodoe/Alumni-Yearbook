@@ -51,16 +51,16 @@ export default function ContactForm() {
           email: userEmail 
         }),
       })
-  
+
       if (response.ok) {
         await emailjs.send(
           process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID!,
-          process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID_SUPPORT!,
+          process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID!, // Changed from TEMPLATE_ID_SUPPORT
           {
             from_name: userName || "A User",
             message: formData.message,
             subject: formData.subject,
-            to_email: "akhildhyani420@gmail.com"
+            to_email: "anshmcs@gmail.com"
           },
           process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY!
         )

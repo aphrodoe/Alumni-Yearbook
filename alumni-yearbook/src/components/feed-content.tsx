@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { motion } from 'framer-motion';
 import PollComponent from './poll-component';
-import { ChevronUp, ChevronDown, BarChart2, Loader2 } from 'lucide-react';
+import { ChevronUp, ChevronDown, BarChart2, Loader2, X } from 'lucide-react';
+import ContactForm from './contact-form';
 
 interface PollOption {
   id: string;
@@ -24,6 +25,7 @@ const FeedContent = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [expandedView, setExpandedView] = useState<boolean>(true);
+  const [showContactForm, setShowContactForm] = useState(false);
 
   const fetchPolls = async (preventScroll = false) => {
     try {
@@ -129,6 +131,58 @@ const FeedContent = () => {
         >
           <div className="text-6xl mb-4">📊</div>
           <p>No polls available at the moment.</p>
+        </motion.div>
+      )}
+
+      <motion.div 
+        className="text-center py-12 mt-8 border-t border-gray-200"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+      >
+        <p className="text-gray-600 mb-2">
+          Have an interesting poll idea for your fellow batchmates?
+        </p>
+        <p className="text-gray-600">
+          We'd love to hear it! {" "}
+          <button 
+            onClick={() => setShowContactForm(true)}
+            className="text-blue-500 hover:text-blue-700 underline transition-colors"
+          >
+            Send us your poll idea
+          </button>
+          {" "}and we'll add it to the collection.
+        </p>
+      </motion.div>
+
+      {showContactForm && (
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+          onClick={(e) => {
+            // Close when clicking outside the modal
+            if (e.target === e.currentTarget) {
+              setShowContactForm(false);
+            }
+          }}
+        >
+          <motion.div 
+            initial={{ scale: 0.95, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.95, opacity: 0 }}
+            className="bg-white rounded-lg p-6 w-full max-w-2xl mx-4 relative"
+          >
+            <button
+              onClick={() => setShowContactForm(false)}
+              className="absolute right-4 top-4 p-2 hover:bg-gray-100 rounded-full transition-colors"
+              aria-label="Close modal"
+            >
+              <X className="h-5 w-5 text-gray-500" />
+            </button>
+            <ContactForm />
+          </motion.div>
         </motion.div>
       )}
     </div>
