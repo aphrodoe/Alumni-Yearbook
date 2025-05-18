@@ -29,6 +29,7 @@ import {
   SidebarMenuButton,
   SidebarProvider,
 } from "@/components/ui/sidebar"
+import { signOut } from "next-auth/react"
 
 import { Great_Vibes } from "next/font/google"
 const cursiveFont = Great_Vibes({ subsets: ["latin"], weight: ["400"] })
@@ -40,8 +41,8 @@ interface AppSidebarProps {
 }
 
 export function AppSidebar({ children, onNavChange, activeContent }: AppSidebarProps) {
-  const router = useRouter()
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const router = useRouter();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Add effect to handle body overflow when mobile menu is open
   useEffect(() => {
@@ -56,9 +57,25 @@ export function AppSidebar({ children, onNavChange, activeContent }: AppSidebarP
     };
   }, [mobileMenuOpen]);
 
-  const handleLogout = () => {
-    router.push("/")
-  }
+  // Update the handleLogout function
+  const handleLogout = async () => {
+    try {
+      // Clear any local storage or state if needed
+      localStorage.clear();
+      
+      // Sign out and force redirect to home page
+      await signOut({
+        redirect: true,
+        callbackUrl: '/'
+      });
+      
+      // No need for manual router.push since we're using redirect: true
+    } catch (error) {
+      console.error("Error during logout:", error);
+      // Fallback redirect in case of error
+      window.location.href = '/';
+    }
+  };
 
   const navItems = [
     { id: "about", label: "About", icon: Book },
