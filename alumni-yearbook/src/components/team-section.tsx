@@ -23,7 +23,7 @@ const TeamMember = ({ name, photoUrl }: TeamMemberProps) => (
 
 export function TeamSection() {
   const developers = [
-    { name: "Akhil Dhyani", photoUrl: "/placeholder.jpg" },
+    { name: "Akhil Dhyani", photoUrl: "/Akhil_Dhyani.jpg" },
     { name: "Divyansh Yadav", photoUrl: "/Divyansh_yadav.jpg" },
     { name: "Developer 3", photoUrl: "/placeholder.jpg" },
     { name: "Developer 4", photoUrl: "/placeholder.jpg" },
