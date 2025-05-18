@@ -20,7 +20,7 @@ export async function POST(request: Request) {
             );
         }
         await connectToDatabase();
-        // Create or update user additional info
+
         const userAddInfo = await UserAddInfo.findOneAndUpdate(
             { email: session.user.email },
             {

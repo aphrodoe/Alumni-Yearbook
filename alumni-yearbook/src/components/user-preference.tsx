@@ -163,7 +163,6 @@ const handleNext = () => {
           .then(async (response) => {
             if (response.ok) {
               const responseData = await response.json();
-              console.log("Server response:", responseData); // Log the server response
               
               await fetch("/api/users/change-preference", {
                 method: "POST",
@@ -174,7 +173,7 @@ const handleNext = () => {
                 },
               });
               console.log("Preferences updated successfully");
-              router.push("/dashboard"); // Redirect immediately after confirmation
+              router.push("/dashboard"); 
             } else {
               const errorData = await response.json();
               console.error("Failed to update preferences:", errorData);

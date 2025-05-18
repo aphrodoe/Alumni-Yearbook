@@ -13,7 +13,8 @@ import Image from "next/image"
 
 interface ImageType {
   _id: string;
-  cloudinaryUrl: string;
+  s3Url?: string;          
+  imageUrl?: string;       
   caption?: string;
   description?: string;
 }
@@ -52,6 +53,7 @@ export default function ImageUploader() {
   const [isSuccess, setIsSuccess] = useState(false)
   const [isGeneratingMessagesPDF, setIsGeneratingMessagesPDF] = useState(false)
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false)
+  const [uploadedImages, setUploadedImages] = useState<ImageType[]>([])
 
   useEffect(() => {
     if (session) {
@@ -65,6 +67,8 @@ export default function ImageUploader() {
       const data = await response.json()
       if (!response.ok) {
         toast.error("Error", { description: data.message || "Failed to load images" })
+      } else {
+        setUploadedImages(data.images || [])
       }
     } catch {
       toast.error("Error", { description: "Failed to fetch images" })
@@ -124,7 +128,6 @@ export default function ImageUploader() {
         setIsSuccess(true)
         toast.success("Success", { description: "Images uploaded successfully!" })
         
-        // Reset form after success
         setTimeout(() => {
           setSelectedImages([])
           setPreviewUrls([])
@@ -146,7 +149,6 @@ export default function ImageUploader() {
   const handleGeneratePDF = async () => {
     setIsGeneratingPDF(true)
     try {
-      // Fetch image data
       const imageResponse = await fetch("/api/images/get")
       const sectionResponse = await fetch("/api/section/get")
   
@@ -171,10 +173,8 @@ export default function ImageUploader() {
           const responseData = await messageResponse.json()
           const messages: Message[] = responseData.messages;
   
-          // Extract unique sender emails
           const uniqueSenders: string[] = [...new Set(messages.map((msg: { email_sender: string }) => msg.email_sender))]
   
-          // Fetch usernames for each sender
           const userFetchPromises = uniqueSenders.map(async (email: string) => {
             const userResponse = await fetch(`/api/users/getname?email=${email}`)
             const userData = await userResponse.json()
@@ -186,7 +186,6 @@ export default function ImageUploader() {
             userMapping.map((user: UserMapping) => [user.email, user.name])
           )
   
-          // Format messages
           messages.forEach((msg: Message) => {
             formattedMessages.push({
               formatted_message: `Message: ${msg.message}  From: ${userMap[msg.email_sender] || "Unknown"}`,
@@ -195,7 +194,6 @@ export default function ImageUploader() {
         }
       }
   
-      // Send data to the PDF generation route
       const response = await fetch('/api/pdf', {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -291,6 +289,10 @@ export default function ImageUploader() {
     } finally {
       setIsGeneratingMessagesPDF(false)
     }
+  }
+
+  const getImageUrl = (image: ImageType): string => {
+    return image.imageUrl || image.s3Url || '';
   }
 
   return (
@@ -420,7 +422,7 @@ export default function ImageUploader() {
             )}
           </Button>
           
-          <Button
+          {/* <Button
             onClick={handleGeneratePDF}
             disabled={isGeneratingPDF}
             variant="outline"
@@ -438,7 +440,7 @@ export default function ImageUploader() {
           >
             <MessageSquare className="mr-2 h-4 w-4" />
             {isGeneratingMessagesPDF ? "Generating..." : "Generate Messages PDF"}
-          </Button>
+          </Button> */}
         </CardFooter>
       </Card>
     </div>

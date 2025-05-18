@@ -10,6 +10,10 @@ const UserPreferenceSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  s3Key: {
+    type: String,
+    required: true,
+  },
   number: {
     type: String,
     required: true,
