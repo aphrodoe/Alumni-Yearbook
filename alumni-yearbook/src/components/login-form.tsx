@@ -1,5 +1,4 @@
 "use client";
-
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardDescription } from "@/components/ui/card";
@@ -50,7 +49,7 @@ export function LoginForm({
             <Button
               variant="outline"
               className="w-full flex items-center justify-center text-blue-900 border-blue-500 hover:bg-blue-200 transition-all shadow-sm"
-              onClick={() => signIn("google", { callbackUrl: "/user-preference" })}
+              onClick={() => signIn("google", { callbackUrl: "/auth/loading" })}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
