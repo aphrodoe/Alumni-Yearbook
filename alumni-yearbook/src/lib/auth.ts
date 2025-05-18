@@ -13,26 +13,20 @@ export const authOptions: NextAuthOptions = {
   secret: process.env.NEXTAUTH_SECRET,
   callbacks: {
     async signIn({ user }) {
-      const email = user.email || "";
-      const isAllowedEmail = email.startsWith("b");
-
-      if (isAllowedEmail) {
-        await dbConnect();
-        try {
-          const existingUser = await User.findOne({ email: user.email });
-          if (!existingUser) {
-            await User.create({
-              email: user.email,
-              name: user.name,
-              hasCompletedPreferences: false,
-            });
-          }
-        } catch (error) {
-          console.error("Error saving user to MongoDB:", error);
+      await dbConnect();
+      try {
+        const existingUser = await User.findOne({ email: user.email });
+        if (!existingUser) {
+          await User.create({
+            email: user.email,
+            name: user.name,
+            hasCompletedPreferences: false,
+          });
         }
+      } catch (error) {
+        console.error("Error saving user to MongoDB:", error);
       }
-
-      return isAllowedEmail;
+      return true;
     },
     async session({ session, token }) {
       if (session.user) {

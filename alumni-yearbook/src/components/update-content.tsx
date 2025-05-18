@@ -421,7 +421,6 @@ export default function UpdateContent() {
                     maxLength={10}
                   />
                   {errors.number && <p className="text-red-500 text-sm mt-1">{errors.number}</p>}
-                  {userPreference.number && <p className="text-green-600 text-sm mt-1">Current number: {userPreference.number}</p>}
                 </div>
                 
                 <Button 
