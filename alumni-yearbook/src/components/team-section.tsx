@@ -54,42 +54,59 @@ export function TeamSection() {
   ];
 
   return (
-    <div className="max-w-6xl mx-auto p-6 space-y-8 rounded-lg">
-      <h1 className="text-4xl font-bold text-blue-900 text-center mb-8">
-        Meet The Team
-      </h1>
+    <div className="relative min-h-screen">
+      {/* Background Image Container */}
+      <div
+        className="fixed top-0 left-0 w-full h-full z-0"
+        style={{
+          backgroundImage: "url('/IITJ_background.png')",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
+          opacity: 0.5,
+        }}
+      />
 
-      {/* Developers Section */}
-      <div className="space-y-6">
-        <h2 className="text-2xl font-semibold text-blue-800 border-b border-blue-200 pb-2">
-          Developers
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {developers.map((dev, index) => (
-            <TeamMember
-              key={index}
-              name={dev.name}
-              photoUrl={dev.photoUrl}
-              linkedinUrl={dev.linkedinUrl}
-            />
-          ))}
-        </div>
-      </div>
+      {/* Content Container */}
+      <div className="relative z-10">
+        <div className="max-w-6xl mx-auto p-6 space-y-8">
+          <h1 className="text-4xl font-bold text-blue-900 text-center mb-8">
+            Meet The Team
+          </h1>
 
-      {/* Designers Section */}
-      <div className="space-y-6 mt-12">
-        <h2 className="text-2xl font-semibold text-blue-800 border-b border-blue-200 pb-2">
-          Designers
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {designers.map((designer, index) => (
-            <TeamMember
-              key={index}
-              name={designer.name}
-              photoUrl={designer.photoUrl}
-              linkedinUrl={designer.linkedinUrl}
-            />
-          ))}
+          {/* Developers Section */}
+          <div className="space-y-6">
+            <h2 className="text-2xl font-semibold text-blue-800 border-b border-blue-200 pb-2">
+              Developers
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {developers.map((dev, index) => (
+                <TeamMember
+                  key={index}
+                  name={dev.name}
+                  photoUrl={dev.photoUrl}
+                  linkedinUrl={dev.linkedinUrl}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* Designers Section */}
+          <div className="space-y-6 mt-12">
+            <h2 className="text-2xl font-semibold text-blue-800 border-b border-blue-200 pb-2">
+              Designers
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {designers.map((designer, index) => (
+                <TeamMember
+                  key={index}
+                  name={designer.name}
+                  photoUrl={designer.photoUrl}
+                  linkedinUrl={designer.linkedinUrl}
+                />
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </div>

@@ -43,91 +43,122 @@ export default function AboutContent() {
   ];
 
   return (
+    <div className="relative min-h-screen">
+      {/* Background Image Container */}
+      <div
+        className="fixed top-0 left-0 w-full h-full z-0"
+        style={{
+          backgroundImage: "url('/IITJ_background.png')",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
+          opacity: 0.25,
+        }}
+      />
 
-      <div className="max-w-6xl mx-auto p-6 space-y-8 rounded-lg">
-        {/* Logo Section */}
-        <div className="flex justify-between items-center">
-          <a 
-            href="https://iitj.ac.in/" 
-            target="_blank" 
-            rel="noopener noreferrer" 
-            className="relative w-20 h-20 sm:w-40 sm:h-40"
-          >
-            <Image
-              src="/IITJ_logo.png"
-              alt="IITJ Logo"
-              fill
-              className="object-contain hover:opacity-80 transition-opacity"
-            />
-          </a>
+      {/* Content Container */}
+      <div className="relative z-10">
+        <div className="max-w-6xl mx-auto p-6 space-y-8 rounded-lg">
+          {/* Logo Section */}
+          <div className="flex justify-between items-center">
+            <a
+              href="https://iitj.ac.in/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="relative w-20 h-20 sm:w-40 sm:h-40"
+            >
+              <Image
+                src="/IITJ_logo.png"
+                alt="IITJ Logo"
+                fill
+                className="object-contain hover:opacity-80 transition-opacity"
+              />
+            </a>
 
-          <h1 className="text-3xl sm:text-6xl font-bold text-blue-900">YEARBOOK 2025</h1>
+            <h1 className="text-3xl sm:text-6xl font-bold text-blue-900">
+              YEARBOOK 2025
+            </h1>
 
-          <a 
-  href="https://saa.iitj.ac.in/home.html" 
-  target="_blank" 
-  rel="noopener noreferrer" 
-  className="relative w-20 h-20 sm:w-40 sm:h-40"
->
-  <Image
-    src="/SAA_logo.png"
-    alt="SAA Logo"
-    fill
-    className="object-contain hover:opacity-80 transition-opacity"
-  />
-</a>
-
-        </div>
-
-        {/* Heading Section */}
-        <div className="text-center mt-6">
-          <h1 className="text-2xl sm:text-4xl font-extrabold text-blue-900 mb-4">
-            Welcome to the{" "}
-            <span className="italic text-3xl sm:text-5xl text-blue-700">YEARBOOK</span>
-          </h1>
-
-          <p className="text-lg text-gray-700 leading-relaxed">
-            A yearbook is not just a collection of photos and names—it's a time capsule of unforgettable moments, friendships, and achievements that define your journey. It captures the late-night coding marathons, thrilling project successes, endless brainstorming sessions, birthday bashes, and the camaraderie that made it all worthwhile. It's a tribute to the challenges you conquered, the knowledge you gained, and most importantly, the friends you made and the memories you created along the way. This website, an initiative by the{" "}
-            <a 
+            <a
               href="https://saa.iitj.ac.in/home.html"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-blue-600 hover:text-blue-800 underline"
+              className="relative w-20 h-20 sm:w-40 sm:h-40"
             >
-              Society of Alumni Affairs, IIT Jodhpur
+              <Image
+                src="/SAA_logo.png"
+                alt="SAA Logo"
+                fill
+                className="object-contain hover:opacity-80 transition-opacity"
+              />
             </a>
-            , aims to digitize the traditional yearbook experience for a technical college—preserving the spirit of these formative years in a way that lasts forever. Years from now, when you flip through its pages, it won't just remind you of what you studied, but of the people, experiences, and lessons that shaped your future.
-          </p>
-        </div>
+          </div>
 
-        {/* FAQ Section */}
-        <div className="space-y-6">
-          <h2 className="text-3xl font-bold text-blue-900 text-center">FAQs</h2>
-          {faqs.map((faq, index) => (
-            <div
-              key={index}
-              className="border border-blue-300 overflow-hidden shadow-md"
-            >
-              <button
-                onClick={() => toggleDropdown(index)}
-                className="w-full flex justify-between items-center px-4 py-3 bg-blue-100 hover:bg-blue-200 text-blue-900 font-semibold transition-colors"
+          {/* Heading Section */}
+          <div className="text-center mt-6">
+            <h1 className="text-2xl sm:text-4xl font-extrabold text-blue-900 mb-4">
+              Welcome to the{" "}
+              <span className="italic text-3xl sm:text-5xl text-blue-700">
+                YEARBOOK
+              </span>
+            </h1>
+
+            <p className="text-lg text-gray-700 leading-relaxed">
+              A yearbook is not just a collection of photos and names—it's a time
+              capsule of unforgettable moments, friendships, and achievements that
+              define your journey. It captures the late-night coding marathons,
+              thrilling project successes, endless brainstorming sessions, birthday
+              bashes, and the camaraderie that made it all worthwhile. It's a tribute
+              to the challenges you conquered, the knowledge you gained, and most
+              importantly, the friends you made and the memories you created along
+              the way. This website, an initiative by the{" "}
+              <a
+                href="https://saa.iitj.ac.in/home.html"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 hover:text-blue-800 underline"
               >
-                <span>{faq.question}</span>
-                {openIndex === index ? (
-                  <ChevronUp className="h-5 w-5" />
-                ) : (
-                  <ChevronDown className="h-5 w-5" />
+                Society of Alumni Affairs, IIT Jodhpur
+              </a>
+              , aims to digitize the traditional yearbook experience for a technical
+              college—preserving the spirit of these formative years in a way that
+              lasts forever. Years from now, when you flip through its pages, it
+              won't just remind you of what you studied, but of the people,
+              experiences, and lessons that shaped your future.
+            </p>
+          </div>
+
+          {/* FAQ Section */}
+          <div className="space-y-6">
+            <h2 className="text-3xl font-bold text-blue-900 text-center">
+              FAQs
+            </h2>
+            {faqs.map((faq, index) => (
+              <div
+                key={index}
+                className="border border-blue-300 overflow-hidden shadow-md"
+              >
+                <button
+                  onClick={() => toggleDropdown(index)}
+                  className="w-full flex justify-between items-center px-4 py-3 bg-blue-100 hover:bg-blue-200 text-blue-900 font-semibold transition-colors"
+                >
+                  <span>{faq.question}</span>
+                  {openIndex === index ? (
+                    <ChevronUp className="h-5 w-5" />
+                  ) : (
+                    <ChevronDown className="h-5 w-5" />
+                  )}
+                </button>
+                {openIndex === index && (
+                  <div className="px-4 py-3 bg-blue-50 text-gray-700">
+                    {faq.answer}
+                  </div>
                 )}
-              </button>
-              {openIndex === index && (
-                <div className="px-4 py-3 bg-blue-50 text-gray-700">
-                  {faq.answer}
-                </div>
-              )}
-            </div>
-          ))}
+              </div>
+            ))}
+          </div>
         </div>
       </div>
-
+    </div>
   );
 }

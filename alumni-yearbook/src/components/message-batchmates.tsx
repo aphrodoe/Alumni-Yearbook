@@ -432,99 +432,226 @@ const UserCard = React.memo(({ user, isLastElement = false }: { user: User, isLa
 
   if (isMobileView) {
     return (
-      <div className="flex flex-col h-full w-full">
-        <h2 className="text-2xl font-bold text-blue-600 mb-6 pt-4">A Final Adieu</h2>
-        {showUserList ? (
-          <div className="flex-grow overflow-y-auto w-full">
-            <div className="p-4 w-full space-y-4">
-              <div className="relative w-full">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-                <Input
-                  placeholder="Search by name or email..."
-                  className="pl-10 w-full"
-                  value={searchTerm}
-                  onChange={handleSearch}
-                />
-              </div>
-            </div>
-
-            {renderUserCards()}
-          </div>
-        ) : (
-          <div className="flex flex-col h-full w-full">
-            <header className="flex items-center p-4 bg-white shadow-sm w-full">
-              <Button variant="ghost" size="icon" className="mr-2" onClick={handleBackToUserList}>
-                <ArrowLeft size={24} />
-              </Button>
-              <Avatar className="mr-3">
-                <AvatarImage src={selectedUser?.profilePicture} alt={selectedUser?.name} />
-                <AvatarFallback>
-                  {selectedUser?.name
-                    .split(" ")
-                    .map((n) => n[0])
-                    .join("")}
-                </AvatarFallback>
-              </Avatar>
-              <div className="overflow-hidden">
-                <div className="font-semibold truncate">{selectedUser?.name}</div>
-                <div className="text-sm text-gray-500 truncate">{selectedUser?.email}</div>
-              </div>
-            </header>
-
-            <div className="flex-grow overflow-y-auto p-4 space-y-2 w-full">
-              {messages.length > 0 ? (
-                messages.map((msg, index) => (
-                  <div
-                    key={index}
-                    className={`flex ${msg.email_sender === session?.user?.email ? "justify-end" : "justify-start"} w-full`}
-                  >
-                    <div
-                      className={`max-w-[70%] p-2 rounded-lg ${
-                        msg.email_sender === session?.user?.email ? "bg-blue-500 text-white" : "bg-gray-200 text-black"
-                      }`}
-                    >
-                      {msg.message}
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <p className="text-center text-muted-foreground py-4">No messages yet</p>
-              )}
-            </div>
-
-            <form onSubmit={handleSubmit} className="p-4 border-t bg-white w-full">
-              <div className="flex items-center w-full">
-                <textarea
-                  placeholder="Write a heartfelt message for your classmate's yearbook..."
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  className="border border-gray-300 rounded-md p-3 w-full min-h-[120px] bg-white focus:border-blue-400 focus:ring-1 focus:ring-blue-400"
-                />
-                <Button
-                  type="submit"
-                  disabled={isSubmitting || !message}
-                  className="flex items-center justify-center ml-2"
-                >
-                  <Send size={20} />
-                </Button>
-              </div>
-            </form>
-          </div>
-        )}
-
-        <Dialog 
-          open={isMessageDialogOpen} 
-          onOpenChange={(open) => {
-            setIsMessageDialogOpen(open);
-            if (!open) {
-              setMessage("");
-              if (isMobileView) {
-                setShowUserList(true);
-                setSelectedUser(null);
-              }
-            }
+      <div className="relative min-h-screen">
+        {/* Background Image Container */}
+        <div 
+          className="fixed top-0 left-0 w-full h-full z-0"
+          style={{
+            backgroundImage: "url('/IITJ_background.png')",
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
+            opacity: 0.5
           }}
-        >
+        />
+        
+        {/* Content Container */}
+        <div className="relative z-10 flex flex-col h-full w-full">
+          <h2 className="text-2xl font-bold text-blue-600 mb-6 pt-4">A Final Adieu</h2>
+          {showUserList ? (
+            <div className="flex-grow overflow-y-auto w-full">
+              <div className="p-4 w-full space-y-4">
+                <div className="relative w-full">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                  <Input
+                    placeholder="Search by name or email..."
+                    className="pl-10 w-full"
+                    value={searchTerm}
+                    onChange={handleSearch}
+                  />
+                </div>
+              </div>
+
+              {renderUserCards()}
+            </div>
+          ) : (
+            <div className="flex flex-col h-full w-full">
+              <header className="flex items-center p-4 bg-white shadow-sm w-full">
+                <Button variant="ghost" size="icon" className="mr-2" onClick={handleBackToUserList}>
+                  <ArrowLeft size={24} />
+                </Button>
+                <Avatar className="mr-3">
+                  <AvatarImage src={selectedUser?.profilePicture} alt={selectedUser?.name} />
+                  <AvatarFallback>
+                    {selectedUser?.name
+                      .split(" ")
+                      .map((n) => n[0])
+                      .join("")}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="overflow-hidden">
+                  <div className="font-semibold truncate">{selectedUser?.name}</div>
+                  <div className="text-sm text-gray-500 truncate">{selectedUser?.email}</div>
+                </div>
+              </header>
+
+              <div className="flex-grow overflow-y-auto p-4 space-y-2 w-full">
+                {messages.length > 0 ? (
+                  messages.map((msg, index) => (
+                    <div
+                      key={index}
+                      className={`flex ${msg.email_sender === session?.user?.email ? "justify-end" : "justify-start"} w-full`}
+                    >
+                      <div
+                        className={`max-w-[70%] p-2 rounded-lg ${
+                          msg.email_sender === session?.user?.email ? "bg-blue-500 text-white" : "bg-gray-200 text-black"
+                        }`}
+                      >
+                        {msg.message}
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-center text-muted-foreground py-4">No messages yet</p>
+                )}
+              </div>
+
+              <form onSubmit={handleSubmit} className="p-4 border-t bg-white w-full">
+                <div className="flex items-center w-full">
+                  <textarea
+                    placeholder="Write a heartfelt message for your classmate's yearbook..."
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    className="border border-gray-300 rounded-md p-3 w-full min-h-[120px] bg-white focus:border-blue-400 focus:ring-1 focus:ring-blue-400"
+                  />
+                  <Button
+                    type="submit"
+                    disabled={isSubmitting || !message}
+                    className="flex items-center justify-center ml-2"
+                  >
+                    <Send size={20} />
+                  </Button>
+                </div>
+              </form>
+            </div>
+          )}
+
+          <Dialog 
+            open={isMessageDialogOpen} 
+            onOpenChange={(open) => {
+              setIsMessageDialogOpen(open);
+              if (!open) {
+                setMessage("");
+                if (isMobileView) {
+                  setShowUserList(true);
+                  setSelectedUser(null);
+                }
+              }
+            }}
+          >
+            <DialogContent className="sm:max-w-xl md:max-w-2xl bg-white border border-gray-200 shadow-lg max-h-[80vh]">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2 text-gray-800">
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src={selectedUser?.profilePicture} alt={selectedUser?.name} />
+                    <AvatarFallback className="bg-blue-100 text-blue-600">
+                      {selectedUser?.name
+                        ?.split(" ")
+                        .map((n) => n[0])
+                        .join("")}
+                    </AvatarFallback>
+                  </Avatar>
+                  Message to {selectedUser?.name}
+                </DialogTitle>
+                <DialogDescription className="text-gray-500">
+                  This message will appear in your and their personalised yearbook.
+                </DialogDescription>
+              </DialogHeader>
+              
+              <div className="max-h-[200px] overflow-y-auto p-2 border border-gray-200 rounded-md bg-white">
+                {messages.length > 0 ? (
+                  messages.map((msg, index) => (
+                    <div
+                      key={index}
+                      className={`flex ${msg.email_sender === session?.user?.email ? "justify-end" : "justify-start"} mb-2`}
+                    >
+                      <div
+                        className={`max-w-[70%] p-2 rounded-lg ${
+                          msg.email_sender === session?.user?.email 
+                            ? "bg-blue-500 text-white" 
+                            : "bg-gray-200 text-black"
+                        }`}
+                      >
+                        {msg.message}
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-center text-muted-foreground py-4">No messages yet</p>
+                )}
+              </div>
+
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="grid gap-4">
+                  <textarea
+                    placeholder="Write a heartfelt message for your classmate's yearbook..."
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    className="border border-gray-300 rounded-md p-3 w-full min-h-[120px] bg-white focus:border-blue-400 focus:ring-1 focus:ring-blue-400"
+                  />
+                </div>
+
+                <DialogFooter className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
+                  <DialogClose asChild>
+                    <Button type="button" variant="outline" className="w-full sm:w-auto">
+                      Cancel
+                    </Button>
+                  </DialogClose>
+                  <Button 
+                    type="submit" 
+                    disabled={isSubmitting || !message} 
+                    className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white"
+                  >
+                    {isSubmitting ? (
+                      <div className="flex items-center">
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Sending...
+                      </div>
+                    ) : (
+                      "Send Message"
+                    )}
+                  </Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="relative min-h-screen">
+      {/* Background Image Container */}
+      <div 
+        className="fixed top-0 left-0 w-full h-full z-0"
+        style={{
+          backgroundImage: "url('/IITJ_background.png')",
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+          opacity: 0.5
+        }}
+      />
+      
+      {/* Content Container */}
+      <div className="relative z-10 flex flex-col h-full">
+        <h2 className="text-2xl font-bold text-blue-600 mb-6">A Final Adieu</h2>
+        <div className="p-4 flex flex-col gap-4">
+          <div className="relative w-full">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+            <Input
+              placeholder="Search by name or email..."
+              className="pl-10 w-full"
+              value={searchTerm}
+              onChange={handleSearch}
+            />
+          </div>
+
+          {renderUserCards()}
+        </div>
+
+        <Dialog open={isMessageDialogOpen} onOpenChange={setIsMessageDialogOpen}>
           <DialogContent className="sm:max-w-xl md:max-w-2xl bg-white border border-gray-200 shadow-lg max-h-[80vh]">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2 text-gray-800">
@@ -540,10 +667,10 @@ const UserCard = React.memo(({ user, isLastElement = false }: { user: User, isLa
                 Message to {selectedUser?.name}
               </DialogTitle>
               <DialogDescription className="text-gray-500">
-                This message will appear in your and their personalised yearbook.
+                These messages will appear in your and their personalised yearbook.
               </DialogDescription>
             </DialogHeader>
-            
+
             <div className="max-h-[200px] overflow-y-auto p-2 border border-gray-200 rounded-md bg-white">
               {messages.length > 0 ? (
                 messages.map((msg, index) => (
@@ -577,16 +704,16 @@ const UserCard = React.memo(({ user, isLastElement = false }: { user: User, isLa
                 />
               </div>
 
-              <DialogFooter className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
+              <DialogFooter className="flex justify-end space-x-2">
                 <DialogClose asChild>
-                  <Button type="button" variant="outline" className="w-full sm:w-auto">
+                  <Button type="button" variant="outline">
                     Cancel
                   </Button>
                 </DialogClose>
                 <Button 
                   type="submit" 
                   disabled={isSubmitting || !message} 
-                  className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white"
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
                 >
                   {isSubmitting ? (
                     <div className="flex items-center">
@@ -601,106 +728,9 @@ const UserCard = React.memo(({ user, isLastElement = false }: { user: User, isLa
             </form>
           </DialogContent>
         </Dialog>
+
+        <Toaster />
       </div>
-    )
-  }
-
-  return (
-    <div className="flex flex-col h-full">
-      <h2 className="text-2xl font-bold text-blue-600 mb-6">A Final Adieu</h2>
-      <div className="p-4 flex flex-col gap-4">
-        <div className="relative w-full">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-          <Input
-            placeholder="Search by name or email..."
-            className="pl-10 w-full"
-            value={searchTerm}
-            onChange={handleSearch}
-          />
-        </div>
-
-        {renderUserCards()}
-      </div>
-
-      <Dialog open={isMessageDialogOpen} onOpenChange={setIsMessageDialogOpen}>
-        <DialogContent className="sm:max-w-xl md:max-w-2xl bg-white border border-gray-200 shadow-lg max-h-[80vh]">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-gray-800">
-              <Avatar className="h-8 w-8">
-                <AvatarImage src={selectedUser?.profilePicture} alt={selectedUser?.name} />
-                <AvatarFallback className="bg-blue-100 text-blue-600">
-                  {selectedUser?.name
-                    ?.split(" ")
-                    .map((n) => n[0])
-                    .join("")}
-                </AvatarFallback>
-              </Avatar>
-              Message to {selectedUser?.name}
-            </DialogTitle>
-            <DialogDescription className="text-gray-500">
-              These messages will appear in your and their personalised yearbook.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="max-h-[200px] overflow-y-auto p-2 border border-gray-200 rounded-md bg-white">
-            {messages.length > 0 ? (
-              messages.map((msg, index) => (
-                <div
-                  key={index}
-                  className={`flex ${msg.email_sender === session?.user?.email ? "justify-end" : "justify-start"} mb-2`}
-                >
-                  <div
-                    className={`max-w-[70%] p-2 rounded-lg ${
-                      msg.email_sender === session?.user?.email 
-                        ? "bg-blue-500 text-white" 
-                        : "bg-gray-200 text-black"
-                    }`}
-                  >
-                    {msg.message}
-                  </div>
-                </div>
-              ))
-            ) : (
-              <p className="text-center text-muted-foreground py-4">No messages yet</p>
-            )}
-          </div>
-
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid gap-4">
-              <textarea
-                placeholder="Write a heartfelt message for your classmate's yearbook..."
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                className="border border-gray-300 rounded-md p-3 w-full min-h-[120px] bg-white focus:border-blue-400 focus:ring-1 focus:ring-blue-400"
-              />
-            </div>
-
-            <DialogFooter className="flex justify-end space-x-2">
-              <DialogClose asChild>
-                <Button type="button" variant="outline">
-                  Cancel
-                </Button>
-              </DialogClose>
-              <Button 
-                type="submit" 
-                disabled={isSubmitting || !message} 
-                className="bg-blue-600 hover:bg-blue-700 text-white"
-              >
-                {isSubmitting ? (
-                  <div className="flex items-center">
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Sending...
-                  </div>
-                ) : (
-                  "Send Message"
-                )}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
-
-      <Toaster />
     </div>
   )
 }

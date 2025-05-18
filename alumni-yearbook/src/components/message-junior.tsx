@@ -67,62 +67,79 @@ export default function MessageJunior() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto">
-      <Toaster />
-      <h2 className="text-2xl font-bold text-blue-600 mb-6 pt-4">Message Juniors</h2>
+    <div className="relative min-h-screen">
+      {/* Background Image Container */}
+      <div 
+        className="fixed top-0 left-0 w-full h-full z-0"
+        style={{
+          backgroundImage: "url('/IITJ_background.png')",
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+          opacity: 0.5
+        }}
+      />
 
-      <Card className="border-blue-100 bg-white shadow-sm text-gray-800">
-        <CardHeader>
-          <CardTitle>Send a Message to a Junior</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <p className="text-sm text-gray-500 mb-2">
-              This message will be visible to your junior when they get access to this portal, that is, their graduation year! It will also appear in their yearbook.
-            </p>
-            <div className="space-y-2">
-              <label htmlFor="email" className="text-sm font-medium">Junior&apos;s Email</label>
-              <Input
-                id="email" 
-                type="email" 
-                placeholder="Enter junior's email address" 
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="bg-white border-gray-300"
-              />
-            </div>
+      {/* Content Container */}
+      <div className="relative z-10">
+        <div className="max-w-2xl mx-auto">
+          <Toaster />
+          <h2 className="text-2xl font-bold text-blue-600 mb-6 pt-4">Message Juniors</h2>
 
-            <div className="space-y-2">
-              <label htmlFor="message" className="text-sm font-medium">Your Message</label>
-              <Textarea
-                id="message"
-                placeholder="Write your message here..."
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                className="min-h-[150px] bg-white border-gray-300"
-                required
-              />
-            </div>
+          <Card className="border-blue-100 bg-white shadow-sm text-gray-800">
+            <CardHeader>
+              <CardTitle>Send a Message to a Junior</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <p className="text-sm text-gray-500 mb-2">
+                  This message will be visible to your junior when they get access to this portal, that is, their graduation year! It will also appear in their yearbook.
+                </p>
+                <div className="space-y-2">
+                  <label htmlFor="email" className="text-sm font-medium">Junior&apos;s Email</label>
+                  <Input
+                    id="email" 
+                    type="email" 
+                    placeholder="Enter junior's email address" 
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    className="bg-white border-gray-300"
+                  />
+                </div>
 
-            <Button 
-              type="submit" 
-              disabled={isSubmitting || !message || !email}
-              className="w-full bg-blue-600 hover:bg-blue-700"
-            >
-              {isSubmitting ? (
-                <span className="flex items-center">
-                  <Send className="mr-2 h-4 w-4 animate-spin" /> Sending...
-                </span>
-              ) : (
-                <span className="flex items-center">
-                  <Send className="mr-2 h-4 w-4" /> Send Message
-                </span>
-              )}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
+                <div className="space-y-2">
+                  <label htmlFor="message" className="text-sm font-medium">Your Message</label>
+                  <Textarea
+                    id="message"
+                    placeholder="Write your message here..."
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    className="min-h-[150px] bg-white border-gray-300"
+                    required
+                  />
+                </div>
+
+                <Button 
+                  type="submit" 
+                  disabled={isSubmitting || !message || !email}
+                  className="w-full bg-blue-600 hover:bg-blue-700"
+                >
+                  {isSubmitting ? (
+                    <span className="flex items-center">
+                      <Send className="mr-2 h-4 w-4 animate-spin" /> Sending...
+                    </span>
+                  ) : (
+                    <span className="flex items-center">
+                      <Send className="mr-2 h-4 w-4" /> Send Message
+                    </span>
+                  )}
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   )
 }

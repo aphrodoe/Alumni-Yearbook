@@ -296,153 +296,170 @@ export default function ImageUploader() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto">
-      <Toaster />
-      <h2 className="text-2xl font-bold text-blue-600 mb-6 pt-4">Add Images & Text</h2>
+    <div className="relative min-h-screen">
+      {/* Background Image Container */}
+      <div 
+        className="fixed top-0 left-0 w-full h-full z-0"
+        style={{
+          backgroundImage: "url('/IITJ_background.png')",
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+          opacity: 0.5
+        }}
+      />
 
-      <Card className="border-blue-100 bg-white shadow-sm text-gray-800">
-        <CardHeader>
-          <CardTitle>Upload a Memory</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit}>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="description">Title</Label>
-                <Input
-                  id="description"
-                  value={description}
-                  onChange={e => setDescription(e.target.value)}
-                  placeholder="Add a title for this memory..."
-                  className="bg-white border-gray-300"
-                />
-              </div>
+      {/* Content Container */}
+      <div className="relative z-10">
+        <div className="max-w-2xl mx-auto">
+          <Toaster />
+          <h2 className="text-2xl font-bold text-blue-600 mb-6 pt-4">Add Images & Text</h2>
 
-              {previewUrls.length === 0 ? (
-                <div className="border-2 border-dashed border-blue-200 rounded-lg p-12 text-center">
-                  <Upload className="h-12 w-12 mx-auto mb-4 text-blue-500" />
-                  <p className="text-gray-500 mb-4">Drag and drop images, or click to browse</p>
-                  <Input 
-                    id="image" 
-                    type="file" 
-                    accept="image/*" 
-                    multiple 
-                    onChange={handleImageChange} 
-                    className="hidden" 
-                  />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => document.getElementById("image")?.click()}
-                    className="border-blue-200 text-blue-600 hover:bg-blue-50"
-                  >
-                    Select Images
-                  </Button>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  <Label>Selected Images</Label>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                    {previewUrls.map((url, index) => (
-                      <div key={index} className="relative group h-32">
-                        <div className="relative w-full h-full">
-                          <Image
-                            src={url}
-                            alt={`Preview ${index + 1}`}
-                            fill
-                            className="object-cover rounded-lg border border-gray-200"
-                            sizes="(max-width: 768px) 50vw, 33vw"
-                          />
-                        </div>
+          <Card className="border-blue-100 bg-white shadow-sm text-gray-800">
+            <CardHeader>
+              <CardTitle>Upload a Memory</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleSubmit}>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="description">Title</Label>
+                    <Input
+                      id="description"
+                      value={description}
+                      onChange={e => setDescription(e.target.value)}
+                      placeholder="Add a title for this memory..."
+                      className="bg-white border-gray-300"
+                    />
+                  </div>
+
+                  {previewUrls.length === 0 ? (
+                    <div className="border-2 border-dashed border-blue-200 rounded-lg p-12 text-center">
+                      <Upload className="h-12 w-12 mx-auto mb-4 text-blue-500" />
+                      <p className="text-gray-500 mb-4">Drag and drop images, or click to browse</p>
+                      <Input 
+                        id="image" 
+                        type="file" 
+                        accept="image/*" 
+                        multiple 
+                        onChange={handleImageChange} 
+                        className="hidden" 
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => document.getElementById("image")?.click()}
+                        className="border-blue-200 text-blue-600 hover:bg-blue-50"
+                      >
+                        Select Images
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <Label>Selected Images</Label>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                        {previewUrls.map((url, index) => (
+                          <div key={index} className="relative group h-32">
+                            <div className="relative w-full h-full">
+                              <Image
+                                src={url}
+                                alt={`Preview ${index + 1}`}
+                                fill
+                                className="object-cover rounded-lg border border-gray-200"
+                                sizes="(max-width: 768px) 50vw, 33vw"
+                              />
+                            </div>
+                            <Button
+                              type="button"
+                              variant="destructive"
+                              size="icon"
+                              className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                              onClick={() => handleRemoveImage(index)}
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="pt-2">
+                        <Input 
+                          id="add-more" 
+                          type="file" 
+                          accept="image/*" 
+                          multiple 
+                          onChange={handleImageChange} 
+                          className="hidden" 
+                        />
                         <Button
                           type="button"
-                          variant="destructive"
-                          size="icon"
-                          className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                          onClick={() => handleRemoveImage(index)}
+                          variant="outline"
+                          size="sm"
+                          onClick={() => document.getElementById("add-more")?.click()}
+                          className="border-blue-200 text-blue-600 hover:bg-blue-50"
                         >
-                          <X className="h-4 w-4" />
+                          Add More Images
                         </Button>
                       </div>
-                    ))}
-                  </div>
-                  <div className="pt-2">
-                    <Input 
-                      id="add-more" 
-                      type="file" 
-                      accept="image/*" 
-                      multiple 
-                      onChange={handleImageChange} 
-                      className="hidden" 
+                    </div>
+                  )}
+
+                  <div className="space-y-2">
+                    <Label htmlFor="caption">Caption</Label>
+                    <Textarea
+                      id="caption"
+                      placeholder="Write a caption for your memory..."
+                      value={caption}
+                      onChange={(e) => setCaption(e.target.value)}
+                      className="min-h-[100px] bg-white border-gray-300"
                     />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => document.getElementById("add-more")?.click()}
-                      className="border-blue-200 text-blue-600 hover:bg-blue-50"
-                    >
-                      Add More Images
-                    </Button>
                   </div>
                 </div>
-              )}
-
-              <div className="space-y-2">
-                <Label htmlFor="caption">Caption</Label>
-                <Textarea
-                  id="caption"
-                  placeholder="Write a caption for your memory..."
-                  value={caption}
-                  onChange={(e) => setCaption(e.target.value)}
-                  className="min-h-[100px] bg-white border-gray-300"
-                />
-              </div>
-            </div>
-          </form>
-        </CardContent>
-        <CardFooter className="flex flex-col sm:flex-row gap-3">
-          <Button
-            onClick={() => handleSubmit(new Event('submit') as unknown as React.FormEvent<HTMLFormElement>)}
-            disabled={selectedImages.length === 0 || isUploading || isSuccess}
-            className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto"
-          >
-            {isUploading ? (
-              <span className="flex items-center">
-                <Upload className="mr-2 h-4 w-4 animate-spin" /> Uploading...
-              </span>
-            ) : isSuccess ? (
-              <span className="flex items-center">
-                <Check className="mr-2 h-4 w-4" /> Uploaded Successfully!
-              </span>
-            ) : (
-              <span className="flex items-center">
-                <Upload className="mr-2 h-4 w-4" /> Upload Memory
-              </span>
-            )}
-          </Button>
-          
-          {/* <Button
-            onClick={handleGeneratePDF}
-            disabled={isGeneratingPDF}
-            variant="outline"
-            className="border-blue-200 text-blue-600 hover:bg-blue-50 w-full sm:w-auto"
-          >
-            <FileText className="mr-2 h-4 w-4" />
-            {isGeneratingPDF ? "Generating..." : "Generate Yearbook PDF"}
-          </Button>
-          
-          <Button
-            onClick={handleGenerateMessages}
-            disabled={isGeneratingMessagesPDF}
-            variant="outline"
-            className="border-blue-200 text-blue-600 hover:bg-blue-50 w-full sm:w-auto"
-          >
-            <MessageSquare className="mr-2 h-4 w-4" />
-            {isGeneratingMessagesPDF ? "Generating..." : "Generate Messages PDF"}
-          </Button> */}
-        </CardFooter>
-      </Card>
+              </form>
+            </CardContent>
+            <CardFooter className="flex flex-col sm:flex-row gap-3">
+              <Button
+                onClick={() => handleSubmit(new Event('submit') as unknown as React.FormEvent<HTMLFormElement>)}
+                disabled={selectedImages.length === 0 || isUploading || isSuccess}
+                className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto"
+              >
+                {isUploading ? (
+                  <span className="flex items-center">
+                    <Upload className="mr-2 h-4 w-4 animate-spin" /> Uploading...
+                  </span>
+                ) : isSuccess ? (
+                  <span className="flex items-center">
+                    <Check className="mr-2 h-4 w-4" /> Uploaded Successfully!
+                  </span>
+                ) : (
+                  <span className="flex items-center">
+                    <Upload className="mr-2 h-4 w-4" /> Upload Memory
+                  </span>
+                )}
+              </Button>
+              
+              {/* <Button
+                onClick={handleGeneratePDF}
+                disabled={isGeneratingPDF}
+                variant="outline"
+                className="border-blue-200 text-blue-600 hover:bg-blue-50 w-full sm:w-auto"
+              >
+                <FileText className="mr-2 h-4 w-4" />
+                {isGeneratingPDF ? "Generating..." : "Generate Yearbook PDF"}
+              </Button>
+              
+              <Button
+                onClick={handleGenerateMessages}
+                disabled={isGeneratingMessagesPDF}
+                variant="outline"
+                className="border-blue-200 text-blue-600 hover:bg-blue-50 w-full sm:w-auto"
+              ></Button>
+                <MessageSquare className="mr-2 h-4 w-4" />
+                {isGeneratingMessagesPDF ? "Generating..." : "Generate Messages PDF"}
+              </Button> */}
+            </CardFooter>
+          </Card>
+        </div>
+      </div>
     </div>
-  )
+  );
 }
