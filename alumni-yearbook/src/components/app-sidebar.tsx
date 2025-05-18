@@ -14,7 +14,8 @@ import {
   ChevronDown,
   User,
   Package,
-  Users, 
+  Users,
+  Eye,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
@@ -77,6 +78,7 @@ export function AppSidebar({ children, onNavChange, activeContent }: AppSidebarP
       label: "Upload memories",
       icon: Upload,
     },
+    { id: "view", label: "View Uploaded Memories", icon: Eye },
     { id: "update", label: "Update Details", icon: User },
     { id: "contact_us", label: "Contact Us", icon: Mail },
     {

@@ -38,7 +38,7 @@ export default function AboutContent() {
     {
       question: "How will I receive my yearbook?",
       answer:
-        "You will receive your digital yearbook on your graduation day! It will be unlocked and available for you to access on the website, filled with your personal photos, and heartfelt messages from batchmates and juniors. It's a surprise waiting to be unveiled, capturing the best moments of your time at IITJ, and you can cherish it forever!",
+        "You will receive your digital yearbook on your graduation day! It will be unlocked and available for you to access on the website, filled with your personal photos, and heartfelt messages from batchmates. It's a surprise waiting to be unveiled, capturing the best moments of your time at IITJ, and you can cherish it forever!",
     },
   ];
 

@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { toast as sonnerToast } from "sonner"
 import { Toaster } from "@/components/ui/sonner"
-import { Send, Search, ArrowLeft, MessageSquare, Loader2 } from "lucide-react"
+import { Send, Search, ArrowLeft, MessageSquare, Loader2, Info } from "lucide-react"
 import {
   Dialog,
   DialogContent,
@@ -20,10 +20,17 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
 
+
 type User = {
   email: string
   name: string
   profilePicture?: string
+  additionalInfo?: {
+    jeevanKaFunda: string
+    iitjIs: string
+    crazyMoment: string
+    lifeTitle: string
+  }
 }
 
 type Message = {
@@ -34,6 +41,7 @@ type Message = {
 }
 
 const preferenceCache = new Map<string, { photoUrl: string, timestamp: number }>();
+const additionalInfoCache = new Map<string, { data: any, timestamp: number }>();
 
 export default function MessageBatchmates() {
   const { data: session } = useSession()
@@ -54,6 +62,7 @@ export default function MessageBatchmates() {
   const [loadingMore, setLoadingMore] = useState(false)
   
   const observer = useRef<IntersectionObserver | null>(null)
+  
   const lastUserElementRef = useCallback((node: HTMLDivElement | null) => {
     if (loadingMore) return
     if (observer.current) observer.current.disconnect()
@@ -85,32 +94,61 @@ export default function MessageBatchmates() {
     }
   }, [searchTerm, users, page])
 
-  const fetchUserPreference = async (email: string): Promise<string> => {
-    const cached = preferenceCache.get(email)
+const fetchUserPreference = async (email: string): Promise<string> => {
+  const cached = preferenceCache.get(email);
+  const now = Date.now();
+  
+  if (cached && (now - cached.timestamp < 600000)) {
+    return cached.photoUrl;
+  }
+  
+  try {
+    const prefResponse = await fetch(`/api/users/get-preference-by-email?email=${encodeURIComponent(email)}`);
+    if (prefResponse.ok) {
+      const prefData = await prefResponse.json();
+      const photoUrl = prefData.preferences?.photoUrl || `/placeholder.svg?height=200&width=200`;
+      
+      preferenceCache.set(email, { 
+        photoUrl,
+        timestamp: now
+      });
+      
+      return photoUrl;
+    }
+  } catch (error) {
+    console.error(`Error fetching preferences for ${email}:`, error);
+  }
+  
+  return `/placeholder.svg?height=200&width=200`;
+}
+
+
+
+  const fetchUserAdditionalInfo = async (email: string) => {
+    const cached = additionalInfoCache.get(email)
     const now = Date.now()
     
     if (cached && (now - cached.timestamp < 600000)) {
-      return cached.photoUrl
+      return cached.data
     }
     
     try {
-      const prefResponse = await fetch(`/api/users/get-preference?email=${encodeURIComponent(email)}`)
-      if (prefResponse.ok) {
-        const prefData = await prefResponse.json()
-        const photoUrl = prefData.preferences?.photoUrl || `/placeholder.svg?height=200&width=200`
+      const response = await fetch(`/api/users/get-additional-info-messages?email=${encodeURIComponent(email)}`)
+      if (response.ok) {
+        const data = await response.json()
         
-        preferenceCache.set(email, { 
-          photoUrl,
+        additionalInfoCache.set(email, { 
+          data: data.additionalInfo,
           timestamp: now
         })
         
-        return photoUrl
+        return data.additionalInfo
       }
     } catch (error) {
-      console.error(`Error fetching preferences for ${email}:`, error)
+      console.error(`Error fetching additional info for ${email}:`, error)
     }
     
-    return `/placeholder.svg?height=200&width=200`
+    return null
   }
 
   const fetchUsers = useCallback(async (initialLoad = false) => {
@@ -123,21 +161,17 @@ export default function MessageBatchmates() {
         const data = await response.json();
         const filteredData = data.users.filter((user: User) => user.email !== session?.user?.email);
         
-        // For initial basic data (without profile pictures)
         if (initialLoad) {
           setUsers(filteredData);
           setFilteredUsers(filteredData);
           setIsLoading(false);
           
-          // Then fetch profile pictures in the background
-          fetchProfilePictures(filteredData);
+          fetchUserDetailsInBackground(filteredData);
         } else {
-          // For pagination loads
           setUsers(prev => [...prev, ...filteredData]);
           setFilteredUsers(prev => [...prev, ...filteredData]);
         }
         
-        // Check if we have more data to load
         setHasMore(data.hasMore);
       }
     } catch (error) {
@@ -147,11 +181,10 @@ export default function MessageBatchmates() {
     }
   }, [page, searchTerm, session]);
 
-  // Fetch profile pictures in the background to avoid blocking rendering
-  const fetchProfilePictures = async (userList: User[]) => {
+  const fetchUserDetailsInBackground = async (userList: User[]) => {
     const updatedUsers = [...userList];
     
-    // Process in smaller batches to avoid overwhelming the server
+
     const batchSize = 5;
     for (let i = 0; i < updatedUsers.length; i += batchSize) {
       const batch = updatedUsers.slice(i, i + batchSize);
@@ -160,20 +193,20 @@ export default function MessageBatchmates() {
         batch.map(async (user, index) => {
           const position = i + index;
           const photoUrl = await fetchUserPreference(user.email);
+          const additionalInfo = await fetchUserAdditionalInfo(user.email);
           
-          // Update the user with profile picture
           updatedUsers[position] = {
             ...user,
-            profilePicture: photoUrl
+            profilePicture: photoUrl,
+            additionalInfo
           };
         })
       );
       
-      // Update state after each batch
       setUsers([...updatedUsers]);
       applyFilters([...updatedUsers], searchTerm);
       
-      // Small delay between batches to reduce server load
+
       if (i + batchSize < updatedUsers.length) {
         await new Promise(resolve => setTimeout(resolve, 100));
       }
@@ -186,7 +219,6 @@ export default function MessageBatchmates() {
     setLoadingMore(true)
     setPage(prevPage => prevPage + 1)
     
-    // Fetch next page
     fetchUsers(false).finally(() => {
       setLoadingMore(false)
     })
@@ -236,22 +268,19 @@ export default function MessageBatchmates() {
     const result = userList.filter(
       (user) => user.name.toLowerCase().includes(term) || user.email.toLowerCase().includes(term)
     )
-    
-    // For search results, don't apply pagination
+
     setFilteredUsers(result)
   }
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const term = e.target.value.toLowerCase()
     setSearchTerm(term)
-    // Reset page when searching
     setPage(1)
     applyFilters(users, term)
   }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-
     if (!message || !selectedUser || !session?.user?.email) {
       sonnerToast.error("Please select a user and type a message")
       return
@@ -301,41 +330,67 @@ export default function MessageBatchmates() {
     setSelectedUser(null)
   }
 
-  // Use React.memo for UserCard to prevent unnecessary re-renders
-  const UserCard = React.memo(({ user, isLastElement = false }: { user: User, isLastElement?: boolean }) => (
-    <div 
-      ref={isLastElement ? lastUserElementRef : null}
-      className="h-full"
-    >
-      <Card className="overflow-hidden hover:shadow-md transition-shadow h-full">
-        <div className="aspect-square relative overflow-hidden">
-          <Avatar className="w-full h-full rounded-none">
-            <AvatarImage src={user.profilePicture} alt={user.name} className="object-cover" />
-            <AvatarFallback className="w-full h-full text-4xl">
-              {user.name
-                .split(" ")
-                .map((n) => n[0])
-                .join("")}
-            </AvatarFallback>
-          </Avatar>
-        </div>
-        <CardContent className="p-4">
-          <h3 className="font-semibold text-lg truncate">{user.name}</h3>
-          <p className="text-sm text-muted-foreground truncate">{user.email}</p>
-        </CardContent>
-        <CardFooter className="p-4 pt-0">
-          <Button 
-            variant="outline" 
-            className="w-full flex items-center gap-2" 
-            onClick={() => handleUserSelect(user)}
-          >
-            <MessageSquare size={16} />
-            Message
-          </Button>
-        </CardFooter>
-      </Card>
-    </div>
-  ))
+
+const UserCard = React.memo(({ user, isLastElement = false }: { user: User, isLastElement?: boolean }) => (
+  <div 
+    ref={isLastElement ? lastUserElementRef : null}
+    className="h-full"
+  >
+    <Card className="overflow-hidden hover:shadow-md transition-shadow h-full">
+      <div className="aspect-square relative overflow-hidden">
+        <Avatar className="w-full h-full rounded-none">
+          <AvatarImage src={user.profilePicture} alt={user.name} className="object-cover" />
+          <AvatarFallback className="w-full h-full text-4xl">
+            {user.name
+              .split(" ")
+              .map((n) => n[0])
+              .join("")}
+          </AvatarFallback>
+        </Avatar>
+      </div>
+      <CardContent className="p-4">
+        <h3 className="font-semibold text-lg truncate">{user.name}</h3>
+        <p className="text-sm text-muted-foreground truncate">{user.email}</p>
+        
+        {user.additionalInfo && (
+          <div className="mt-3 text-sm space-y-2 bg-gray-50 p-3 rounded-md">
+            {user.additionalInfo.lifeTitle && (
+              <div>
+                <span className="font-semibold">Life Title:</span> {user.additionalInfo.lifeTitle}
+              </div>
+            )}
+            {user.additionalInfo.jeevanKaFunda && (
+              <div>
+                <span className="font-semibold">Jeevan Ka Funda:</span> {user.additionalInfo.jeevanKaFunda}
+              </div>
+            )}
+            {user.additionalInfo.iitjIs && (
+              <div>
+                <span className="font-semibold">IITJ Is:</span> {user.additionalInfo.iitjIs}
+              </div>
+            )}
+            {user.additionalInfo.crazyMoment && (
+              <div>
+                <span className="font-semibold">Crazy Moment:</span> {user.additionalInfo.crazyMoment}
+              </div>
+            )}
+          </div>
+        )}
+      </CardContent>
+      <CardFooter className="p-4 pt-0">
+        <Button 
+          variant="outline" 
+          className="w-full flex items-center gap-2" 
+          onClick={() => handleUserSelect(user)}
+        >
+          <MessageSquare size={16} />
+          Message
+        </Button>
+      </CardFooter>
+    </Card>
+  </div>
+))
+
 
   const renderUserCards = () => {
     if (isLoading) {

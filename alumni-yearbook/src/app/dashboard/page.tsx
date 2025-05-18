@@ -15,7 +15,8 @@ import UpdateContent from "@/components/update-content";
 import ImageUploader from "@/components/image-uploader";
 import MessageBatchmates from "@/components/message-batchmates";
 import MessageJunior from "@/components/message-junior";
-import ContactForm from "@/components/contact-form"; 
+import ContactForm from "@/components/contact-form";
+import MemoryViewer from "@/components/memory-viewer";
 import { TeamSection } from "@/components/team-section";
 
 export default function Dashboard() {
@@ -55,6 +56,8 @@ export default function Dashboard() {
         return <TeamSection />;
       case "feed":
         return <FeedContent />;
+      case "view":
+        return <MemoryViewer />;
       case "about":
         return <AboutContent />;
       default:
