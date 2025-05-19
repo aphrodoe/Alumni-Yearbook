@@ -70,7 +70,7 @@ export default function MemoryViewer() {
       
       if (!memoryMap.has(key)) {
         memoryMap.set(key, {
-          _id: image._id,
+          _id: image._id, // We'll use the first image's ID as the reference ID
           email: image.email,
           s3Key: image.s3Key,
           s3Url: image.s3Url,
@@ -90,6 +90,7 @@ export default function MemoryViewer() {
     if (!memoryToDelete) return
     
     try {
+      // We only need to pass a single image ID - the backend will delete all related images
       const response = await fetch(`/api/images/delete/${memoryToDelete}`, {
         method: 'DELETE',
       })
@@ -97,8 +98,12 @@ export default function MemoryViewer() {
       const data = await response.json()
       
       if (response.ok) {
-        toast.success("Success", { description: "Memory deleted successfully" })
-        fetchMemories()
+        toast.success("Success", { 
+          description: `Memory and all associated images deleted successfully${
+            data.deletedCount ? ` (${data.deletedCount} images)` : ''
+          }`
+        })
+        fetchMemories() // Refresh the memories list
       } else {
         toast.error("Error", { description: data.message || "Failed to delete memory" })
       }
@@ -144,12 +149,6 @@ export default function MemoryViewer() {
             <div className="text-center py-12 bg-gray-50 rounded-lg border border-gray-200">
               <h3 className="text-xl font-medium text-gray-700 mb-2">No memories found</h3>
               <p className="text-gray-500 mb-4">You haven't added any memories yet.</p>
-              <Button 
-                onClick={() => window.location.href = '/dashboard?section=add'} 
-                className="bg-blue-600 hover:bg-blue-700"
-              >
-                Add Your First Memory
-              </Button>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -189,6 +188,9 @@ export default function MemoryViewer() {
                       ))}
                     </div>
                     <p className="text-gray-600 text-sm italic">{memory.caption}</p>
+                    {memory.images && memory.images.length > 1 && (
+                      <p className="text-gray-500 text-xs mt-2">{memory.images.length} images in this memory</p>
+                    )}
                   </CardContent>
                   
                 </Card>

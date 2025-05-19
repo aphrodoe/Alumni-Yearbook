@@ -1,11 +1,11 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
 import Image from '@/app/models/Image'
 import dbConnect from '@/lib/mongodb'
 
 export async function DELETE(
-  request: NextRequest,
+  request: Request,
   { params }: { params: { id: string } }
 ) {
   try {
@@ -22,22 +22,29 @@ export async function DELETE(
     
     const imageId = params.id
     
-    const image = await Image.findOne({ 
+    const referenceImage = await Image.findOne({ 
       _id: imageId,
       email: session.user.email 
     })
     
-    if (!image) {
+    if (!referenceImage) {
       return NextResponse.json(
         { message: 'Memory not found or you do not have permission to delete it' },
         { status: 404 }
       )
     }
     
-    await Image.deleteOne({ _id: imageId })
+    const deleteResult = await Image.deleteMany({ 
+      email: session.user.email,
+      headtitle: referenceImage.headtitle,
+      caption: referenceImage.caption
+    })
     
     return NextResponse.json(
-      { message: 'Memory deleted successfully' },
+      { 
+        message: 'Memory and all associated images deleted successfully',
+        deletedCount: deleteResult.deletedCount
+      },
       { status: 200 }
     )
   } catch (error) {
