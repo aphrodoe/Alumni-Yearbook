@@ -433,17 +433,6 @@ const UserCard = React.memo(({ user, isLastElement = false }: { user: User, isLa
   if (isMobileView) {
     return (
       <div className="relative min-h-screen">
-        {/* Background Image Container */}
-        <div 
-          className="fixed top-0 left-0 w-full h-full z-0"
-          style={{
-            backgroundImage: "url('/IITJ_background.png')",
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            backgroundRepeat: 'no-repeat',
-            opacity: 0.5
-          }}
-        />
         
         {/* Content Container */}
         <div className="relative z-10 flex flex-col h-full w-full">

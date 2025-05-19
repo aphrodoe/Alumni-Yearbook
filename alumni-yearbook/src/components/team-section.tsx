@@ -40,7 +40,7 @@ export function TeamSection() {
     },
     {
       name: "Divyansh Yadav",
-      photoUrl: "/Divyansh_yadav.jpg",
+      photoUrl: "/Divyansh_Yadav.jpg",
       linkedinUrl: "https://www.linkedin.com/in/divyansh-yadav-b17b2b328/",
     },
   ];
