@@ -2,6 +2,9 @@
 FROM node:18-alpine AS builder
 WORKDIR /app
 
+# Install dependencies required for node-gyp and canvas
+RUN apk add --no-cache python3 make g++ build-base cairo-dev jpeg-dev pango-dev giflib-dev pixman-dev pangomm-dev libjpeg-turbo-dev freetype-dev
+
 # Copy package files and install dependencies
 COPY package.json package-lock.json* ./
 RUN npm ci
@@ -13,6 +16,9 @@ RUN npm run build
 # Production stage
 FROM node:18-alpine
 WORKDIR /app
+
+# Install runtime dependencies for canvas
+RUN apk add --no-cache cairo jpeg pango giflib pixman pangomm libjpeg-turbo freetype
 
 # Copy only necessary files from builder
 COPY --from=builder /app/package.json /app/package-lock.json* ./
