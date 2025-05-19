@@ -4,10 +4,7 @@ import { authOptions } from '@/lib/auth'
 import Image from '@/app/models/Image'
 import dbConnect from '@/lib/mongodb'
 
-export async function DELETE(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
+async function deleteHandler(request: Request, params: { id: string }) {
   try {
     const session = await getServerSession(authOptions)
     
@@ -54,4 +51,8 @@ export async function DELETE(
       { status: 500 }
     )
   }
+}
+
+export async function DELETE(request: Request, context: any) {
+  return deleteHandler(request, context.params)
 }
