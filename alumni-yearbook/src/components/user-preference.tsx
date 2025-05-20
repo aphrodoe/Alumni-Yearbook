@@ -14,6 +14,7 @@ import { Textarea } from "@/components/ui/textarea";
 export default function UserPreferenceForm() {
   const router = useRouter();
   const [step, setStep] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState({
     number: '',
     linkedinProfile: '',
@@ -140,6 +141,7 @@ const handleNext = () => {
     setStep(step + 1);
   } else {
 
+    setIsLoading(true);
     if (formData.photo) {
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -172,11 +174,12 @@ const handleNext = () => {
         })
         .then(response => {
           if (!response.ok) {
-            console.error("Failed to save social profile data");
+            console.error("Failed to save social profile data"); 
           }
         })
         .catch(error => {
           console.error("Error saving social profile:", error);
+          setIsLoading(false);
         });
         
         fetch("/api/additional-info", {
@@ -191,6 +194,7 @@ const handleNext = () => {
         })
         .catch(error => {
           console.error("Error saving additional info:", error);
+          setIsLoading(false);
         });
 
         fetch("/api/users/update-preference", {
@@ -216,6 +220,7 @@ const handleNext = () => {
                 },
               });
               console.log("Preferences updated successfully");
+              setIsLoading(false);
               router.push("/dashboard"); 
             } else {
               const errorData = await response.json();
@@ -224,6 +229,7 @@ const handleNext = () => {
           })
           .catch((error) => {
             console.error("Error updating preferences:", error);
+            setIsLoading(false);
           });
       };
       reader.readAsDataURL(formData.photo);
@@ -528,14 +534,27 @@ const handleNext = () => {
                         <div></div>
                       )}
                       
-                      <Button
-                        type="button"
-                        onClick={handleNext}
-                        disabled={!isStepComplete()}
-                        className="bg-blue-600 text-white hover:bg-blue-700"
-                      >
-                        {step === totalSteps ? "Submit" : "Next"} {step < totalSteps && <ChevronRight className="ml-2 h-4 w-4" />}
-                      </Button>
+                    <Button
+                      type="button"
+                      onClick={handleNext}
+                      disabled={!isStepComplete() || isLoading}
+                      className="bg-blue-600 text-white hover:bg-blue-700"
+                    >
+                      {isLoading ? (
+                        <>
+                          <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          {step === totalSteps ? "Uploading..." : "Next"}
+                        </>
+                      ) : (
+                        <>
+                          {step === totalSteps ? "Submit" : "Next"} {step < totalSteps && <ChevronRight className="ml-2 h-4 w-4" />}
+                        </>
+                      )}
+                    </Button>
+
                     </div>
                   </CardContent>
                 </Card>
