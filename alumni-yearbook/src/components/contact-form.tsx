@@ -55,12 +55,12 @@ export default function ContactForm() {
       if (response.ok) {
         await emailjs.send(
           process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID!,
-          process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID!, // Changed from TEMPLATE_ID_SUPPORT
+          process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID_SUPPORT!, 
           {
             from_name: userName || "A User",
             message: formData.message,
             subject: formData.subject,
-            to_email: "anshmcs@gmail.com"
+            to_email: "b24cs1005@iitj.ac.in"
           },
           process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY!
         )
@@ -70,7 +70,6 @@ export default function ContactForm() {
           description: "Your message has been sent to the support team" 
         })
         
-        // Reset form after success
         setTimeout(() => {
           setFormData({
             subject: "",
