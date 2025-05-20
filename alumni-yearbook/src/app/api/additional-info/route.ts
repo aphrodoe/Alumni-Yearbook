@@ -31,6 +31,11 @@ export async function POST(request: Request) {
             },
             { upsert: true, new: true }
         );
+
+        return NextResponse.json({ 
+            message: 'Additional info updated successfully',
+            userAddInfo
+        });
     } catch (error) {
         console.error('Error updating additional info:', error);
         return NextResponse.json(

@@ -5,7 +5,7 @@ import './globals.css';
 
 export const metadata: Metadata = {
   title: 'Yearbook',
-  description: 'Your app description',
+  description: 'The official website for the Yearbook of batch of 2025, IIT Jodhpur',
 };
 
 interface RootLayoutProps {
