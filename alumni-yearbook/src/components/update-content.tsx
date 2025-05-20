@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
-import { Upload, Save, Camera, MessageSquare, Info, Phone } from "lucide-react";
+import { Upload, Save, Camera, Info, Phone, Linkedin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,6 +16,7 @@ import { Toaster } from "@/components/ui/sonner";
 type UserPreference = {
   photoUrl?: string;
   number?: string;
+  linkedinProfile?: string; 
 };
 
 type UserAddInfo = {
@@ -33,6 +34,7 @@ export default function UpdateContent() {
   const [userPreference, setUserPreference] = useState<UserPreference>({
     photoUrl: "",
     number: "",
+    linkedinProfile: "",
   });
   
   const [userAddInfo, setUserAddInfo] = useState<UserAddInfo>({
@@ -47,6 +49,7 @@ export default function UpdateContent() {
   
   const [errors, setErrors] = useState({
     number: "",
+    linkedinProfile: "", 
     jeevanKaFunda: "",
     iitjIs: "",
     crazyMoment: "",
@@ -58,16 +61,15 @@ export default function UpdateContent() {
       if (session?.user?.email) {
         try {
           setLoading(true);
-          
           const prefResponse = await fetch(`/api/users/get-preference`);
           if (prefResponse.ok) {
             const prefData = await prefResponse.json();
             
-            
-            setUserPreference({
+            setUserPreference(prev => ({
+              ...prev,
               photoUrl: prefData.photoUrl || "",
               number: prefData.number || "",
-            });
+            }));
             
             if (prefData.photoUrl) {
               setPhotoPreview(prefData.photoUrl);
@@ -75,11 +77,20 @@ export default function UpdateContent() {
           } else {
             console.error("Failed to fetch preferences:", await prefResponse.text());
           }
-          
+          const socialResponse = await fetch(`/api/users/get-social-profile`);
+          if (socialResponse.ok) {
+            const socialData = await socialResponse.json();
+            
+            setUserPreference(prev => ({
+              ...prev,
+              linkedinProfile: socialData.linkedinProfile || "",
+            }));
+          } else {
+            console.error("Failed to fetch social profile:", await socialResponse.text());
+          }
           const addInfoResponse = await fetch(`/api/users/get-additional-info`);
           if (addInfoResponse.ok) {
             const addInfoData = await addInfoResponse.json();
-            
             
             setUserAddInfo({
               jeevanKaFunda: addInfoData.jeevanKaFunda || "",
@@ -128,6 +139,15 @@ export default function UpdateContent() {
     return "";
   };
 
+  const validateLinkedInUrl = (url: string) => {
+    if (url.trim() === '') return '';
+    
+    if (!url.includes('linkedin.com')) {
+      return 'Please enter a valid LinkedIn profile URL';
+    }
+    return '';
+  };
+
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
@@ -146,6 +166,14 @@ export default function UpdateContent() {
       } else {
         setErrors({ ...errors, number: "" });
       }
+    } else if (name === "linkedinProfile") {
+      setUserPreference({
+        ...userPreference,
+        [name]: value,
+      });
+      
+      const errorMessage = validateLinkedInUrl(value);
+      setErrors({ ...errors, linkedinProfile: errorMessage });
     } else if (["jeevanKaFunda", "iitjIs", "crazyMoment", "lifeTitle"].includes(name)) {
       setUserAddInfo({
         ...userAddInfo,
@@ -313,6 +341,43 @@ export default function UpdateContent() {
     }
   };
 
+  const updateLinkedInProfile = async () => {
+    if (errors.linkedinProfile) {
+      toast.error("Please enter a valid LinkedIn URL");
+      return false;
+    }
+    
+    try {
+      setSaving(true);
+      
+      const response = await fetch("/api/users/update-social-profile", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          linkedinProfile: userPreference.linkedinProfile,
+        }),
+      });
+      
+      if (response.ok) {
+        toast.success("LinkedIn profile updated successfully");
+        setSaving(false);
+        return true;
+      } else {
+        const error = await response.json();
+        toast.error(`Failed to update LinkedIn profile: ${error.message}`);
+        setSaving(false);
+        return false;
+      }
+    } catch (error) {
+      console.error("Error updating LinkedIn profile:", error);
+      toast.error("Something went wrong. Please try again.");
+      setSaving(false);
+      return false;
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-full">
@@ -338,6 +403,10 @@ export default function UpdateContent() {
           <TabsTrigger value="number" className="flex items-center gap-2">
             <Phone className="h-4 w-4" />
             <span>Phone Number</span>
+          </TabsTrigger>
+          <TabsTrigger value="linkedin" className="flex items-center gap-2">
+            <Linkedin className="h-4 w-4" />
+            <span>LinkedIn</span>
           </TabsTrigger>
           <TabsTrigger value="aboutme" className="flex items-center gap-2">
             <Info className="h-4 w-4" />
@@ -436,6 +505,48 @@ export default function UpdateContent() {
                     <span className="flex items-center gap-2">
                       <Save className="h-4 w-4" />
                       Save Number
+                    </span>
+                  }
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="linkedin">
+          <Card>
+            <CardHeader>
+              <CardTitle>Update LinkedIn Profile</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="linkedinProfile">LinkedIn Profile URL</Label>
+                  <Input
+                    id="linkedinProfile"
+                    name="linkedinProfile"
+                    value={userPreference.linkedinProfile || ""}
+                    onChange={handleInputChange}
+                    placeholder="https://www.linkedin.com/in/yourprofile"
+                    className="mt-1"
+                  />
+                  {errors.linkedinProfile && <p className="text-red-500 text-sm mt-1">{errors.linkedinProfile}</p>}
+                  <p className="text-gray-500 text-sm mt-1">Enter your complete LinkedIn profile URL</p>
+                </div>
+                
+                <Button 
+                  className="w-full md:w-auto"
+                  onClick={updateLinkedInProfile}
+                  disabled={errors.linkedinProfile !== "" || saving}
+                >
+                  {saving ? 
+                    <span className="flex items-center gap-2">
+                      <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
+                      Saving...
+                    </span> : 
+                    <span className="flex items-center gap-2">
+                      <Save className="h-4 w-4" />
+                      Save LinkedIn Profile
                     </span>
                   }
                 </Button>

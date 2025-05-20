@@ -18,6 +18,7 @@ const UserPreferenceSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  
 }, { timestamps: true });
 
 const UserPreference = mongoose.models.UserPreference || mongoose.model('UserPreference', UserPreferenceSchema);

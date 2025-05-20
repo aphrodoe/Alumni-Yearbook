@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import connectToDatabase from "@/lib/mongodb";
-import UserPreference from "@/app/models/UserPreference";
+import SocialProfile from "@/app/models/SocialProfile";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 
@@ -13,30 +13,25 @@ export async function GET() {
   try {
     await connectToDatabase();
 
-    // Find the user preference
-    const userPreference = await UserPreference.findOne({
+    // Find the user's social profile
+    const socialProfile = await SocialProfile.findOne({
       email: session.user.email,
     });
 
-    if (userPreference) {
-      // Return all relevant fields including linkedinProfile
+    if (socialProfile) {
       return NextResponse.json({
-        photoUrl: userPreference.photoUrl || "",
-        number: userPreference.number || "",
-        linkedinProfile: userPreference.linkedinProfile || "", // Ensure this field is included
+        linkedinProfile: socialProfile.linkedinProfile || "",
       });
     } else {
-      // User has no preferences yet
+      // User has no social profile yet
       return NextResponse.json({
-        photoUrl: "",
-        number: "",
         linkedinProfile: "",
       });
     }
   } catch (error) {
-    console.error("Error fetching user preferences:", error);
+    console.error("Error fetching social profile:", error);
     return NextResponse.json(
-      { message: "Error fetching user preferences", error: (error as Error).message },
+      { message: "Error fetching social profile", error: (error as Error).message },
       { status: 500 }
     );
   }
