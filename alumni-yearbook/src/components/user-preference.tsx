@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { Upload, Quote, ChevronLeft, ChevronRight, Check, BookOpen, MessageSquare } from "lucide-react"; 
+import { Upload, Quote, ChevronLeft, ChevronRight, Check, BookOpen, MessageSquare, Linkedin } from "lucide-react"; 
 import { getSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,6 +16,7 @@ export default function UserPreferenceForm() {
   const [step, setStep] = useState(1);
   const [errors, setErrors] = useState({
     number: '',
+    linkedinProfile: '',
     jeevanKaFunda: '',
     iitjIs: '',
     crazyMoment: '',
@@ -27,13 +28,13 @@ export default function UserPreferenceForm() {
     photo: null as File | null,
     photoPreview: "",
     number: "",
+    linkedinProfile: "",
     jeevanKaFunda: "",
     iitjIs: "",
     crazyMoment: "",
     lifeTitle: "",
   });
 
-  // Check if user has already completed preferences
   useEffect(() => {
     const checkIfPreferencesCompleted = async () => {
       const session = await getSession();
@@ -85,6 +86,15 @@ export default function UserPreferenceForm() {
     return '';
   };
 
+  const validateLinkedInUrl = (url: string) => {
+    if (url.trim() === '') return '';
+    
+    if (!url.includes('linkedin.com')) {
+      return 'Please enter a valid LinkedIn profile URL';
+    }
+    return '';
+  };
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     
@@ -101,6 +111,14 @@ export default function UserPreferenceForm() {
       } else {
         setErrors({ ...errors, number: '' });
       }
+    } else if (name === 'linkedinProfile') {
+      setFormData({
+        ...formData,
+        [name]: value,
+      });
+      
+      const errorMessage = validateLinkedInUrl(value);
+      setErrors({ ...errors, linkedinProfile: errorMessage });
     } else if (['jeevanKaFunda', 'iitjIs', 'crazyMoment', 'lifeTitle'].includes(name)) {
       setFormData({
         ...formData,
@@ -121,14 +139,18 @@ const handleNext = () => {
   if (step < totalSteps) {
     setStep(step + 1);
   } else {
-    // Convert the image to base64 if it exists
+
     if (formData.photo) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        // Log the data being sent to the server for debugging
+
         const requestData = {
-          photoUrl: reader.result, // This will be a base64 string
+          photoUrl: reader.result, 
           number: formData.number,
+        };
+
+        const socialData = {
+          linkedinProfile: formData.linkedinProfile
         };
 
         const requestDataWithText = {
@@ -137,6 +159,25 @@ const handleNext = () => {
           crazyMoment: formData.crazyMoment,
           lifeTitle: formData.lifeTitle
         };
+        
+        fetch("/api/social-profiles", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Cache-Control": "no-cache",
+            Pragma: "no-cache",
+          },
+          body: JSON.stringify(socialData),
+          credentials: "include",
+        })
+        .then(response => {
+          if (!response.ok) {
+            console.error("Failed to save social profile data");
+          }
+        })
+        .catch(error => {
+          console.error("Error saving social profile:", error);
+        });
         
         fetch("/api/additional-info", {
           method: "POST",
@@ -148,8 +189,10 @@ const handleNext = () => {
           body: JSON.stringify(requestDataWithText),
           credentials: "include",
         })
+        .catch(error => {
+          console.error("Error saving additional info:", error);
+        });
 
-        // Now send the base64 string to the server
         fetch("/api/users/update-preference", {
           method: "POST",
           headers: {
@@ -201,9 +244,9 @@ const handleNext = () => {
       case 1:
         return !!formData.photo;
       case 2:
-        return !!formData.number && errors.number === '';
+        return !!formData.number && errors.number === '' && 
+               (formData.linkedinProfile === '' || errors.linkedinProfile === '');
       case 3:
-        // All question fields are filled and have no errors
         const allFieldsFilled = 
           !!formData.jeevanKaFunda && 
           !!formData.iitjIs && 
@@ -249,7 +292,7 @@ const handleNext = () => {
             {step === 1
               ? "Upload Photo"
               : step === 2
-              ? "Your Mobile Number"
+              ? "Your Contact Information"
               : step === 3
               ? "About You"
               : "Review & Submit"}
@@ -296,18 +339,44 @@ const handleNext = () => {
             <div className="space-y-4 min-w-[450px] min-h-[300px] flex flex-col">
               <div className="flex items-center gap-2 mb-4">
                 <Quote className="h-5 w-5 text-blue-600" />
-                <Label htmlFor="number" className="text-lg font-medium">Your Mobile Number</Label>
+                <Label htmlFor="number" className="text-lg font-medium">Your Contact Information</Label>
               </div>
-              <Input
-                id="number"
-                name="number"
-                value={formData.number}
-                onChange={handleInputChange}
-                className="bg-white border-gray-300"
-                type="tel"
-                placeholder="Enter your mobile number"
-              />
-              {errors.number && <p className="text-red-500 text-sm mt-1">{errors.number}</p>}
+              
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="number" className="text-sm font-medium">Mobile Number</Label>
+                  <Input
+                    id="number"
+                    name="number"
+                    value={formData.number}
+                    onChange={handleInputChange}
+                    className="bg-white border-gray-300"
+                    type="tel"
+                    placeholder="Enter your mobile number"
+                  />
+                  {errors.number && <p className="text-red-500 text-sm mt-1">{errors.number}</p>}
+                </div>
+                
+                <div>
+                  <Label htmlFor="linkedinProfile" className="text-sm font-medium flex items-center gap-2">
+                    <Linkedin className="h-4 w-4 text-blue-600" />
+                    <span>LinkedIn Profile</span>
+                  </Label>
+                  <Input
+                    id="linkedinProfile"
+                    name="linkedinProfile"
+                    value={formData.linkedinProfile}
+                    onChange={handleInputChange}
+                    className="bg-white border-gray-300 mt-1"
+                    type="url"
+                    placeholder="https://www.linkedin.com/in/yourprofile"
+                  />
+                  {errors.linkedinProfile && <p className="text-red-500 text-sm mt-1">{errors.linkedinProfile}</p>}
+                  <p className="text-xs text-gray-500 mt-1">
+                    Share your LinkedIn profile to connect with classmates after graduation
+                  </p>
+                </div>
+              </div>
             </div>
           )}
 
@@ -424,8 +493,9 @@ const handleNext = () => {
                   </div>
                   
                   <div className="w-3/4">
-                    <h4 className="font-medium text-gray-700">Mobile Number</h4>
-                    <p className="text-sm text-gray-600 mt-1">{formData.number || "No mobile number provided"}</p>
+                    <h4 className="font-medium text-gray-700">Contact Information</h4>
+                    <p className="text-sm text-gray-600 mt-1">Mobile: {formData.number || "Not provided"}</p>
+                    <p className="text-sm text-gray-600 mt-1">LinkedIn: {formData.linkedinProfile || "Not provided"}</p>
                     
                     <h4 className="font-medium text-gray-700 mt-4">Jeevan Ka Funda</h4>
                     <p className="text-sm text-gray-600 mt-1">{formData.jeevanKaFunda || "Not provided"}</p>

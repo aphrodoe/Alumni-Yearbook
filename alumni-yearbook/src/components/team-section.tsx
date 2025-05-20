@@ -6,30 +6,32 @@ interface TeamMemberProps {
   linkedinUrl: string;
 }
 
-const TeamMember = ({ name, photoUrl, linkedinUrl }: TeamMemberProps) => (
-  <div className="flex flex-col items-center p-6 bg-white rounded-lg shadow-md">
-    <a
-      href={linkedinUrl}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="cursor-pointer transition-transform hover:scale-105"
-    >
-      <div className="relative w-48 h-48 mb-6">
-        <div className="absolute inset-0 rounded-full bg-gray-200" />
-        <Image
-          src={photoUrl}
-          alt={name}
-          fill
-          className="rounded-full object-cover"
-          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-        />
-      </div>
-      <h3 className="text-xl font-semibold text-blue-900 hover:text-blue-600">
-        {name}
-      </h3>
-    </a>
-  </div>
-);
+const TeamMember = ({ name, photoUrl, linkedinUrl }: TeamMemberProps) => {
+  return (
+    <div className="flex flex-col items-center p-6 bg-white rounded-lg shadow-md">
+      <a
+        href={linkedinUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="cursor-pointer transition-transform hover:scale-105 flex flex-col items-center"
+      >
+        <div className="relative w-48 h-48 mb-4">
+          <div className="absolute inset-0 rounded-full bg-gray-200" />
+          <Image
+            src={photoUrl}
+            alt={name}
+            fill
+            className="rounded-full object-cover"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          />
+        </div>
+        <h3 className="text-xl font-semibold text-blue-900 hover:text-blue-600 text-center mt-2">
+          {name}
+        </h3>
+      </a>
+    </div>
+  );
+};
 
 export function TeamSection() {
   const developers = [
