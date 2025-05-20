@@ -273,7 +273,7 @@ const handleNext = () => {
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-background p-4">
-      <Card className="max-w-2xl mx-auto border-blue-200 bg-white shadow-lg">
+      <Card className="w-full max-w-2xl mx-auto border-blue-200 bg-white shadow-lg">
         <CardContent className="pt-6">
           <div className="flex justify-between mb-6">
             {[...Array(totalSteps)].map((_, index) => (
@@ -299,7 +299,7 @@ const handleNext = () => {
           </h2>
 
           {step === 1 && (
-            <div className="space-y-4 min-w-[450px] min-h-[300px] flex flex-col items-center justify-center">
+            <div className="space-y-4 flex flex-col items-center justify-center">
               <div className="flex flex-col items-center justify-center">
                 {formData.photoPreview ? (
                   <div className="relative w-40 h-40 rounded-full overflow-hidden mb-4 border-4 border-blue-200 shadow-lg">
@@ -336,7 +336,7 @@ const handleNext = () => {
           )}
 
           {step === 2 && (
-            <div className="space-y-4 min-w-[450px] min-h-[300px] flex flex-col">
+            <div className="space-y-4 flex flex-col">
               <div className="flex items-center gap-2 mb-4">
                 <Quote className="h-5 w-5 text-blue-600" />
                 <Label htmlFor="number" className="text-lg font-medium">Your Contact Information</Label>
@@ -381,7 +381,7 @@ const handleNext = () => {
           )}
 
           {step === 3 && (
-            <div className="space-y-6 min-w-[450px] min-h-[300px]">
+            <div className="space-y-6">
               <div className="flex items-center gap-2 mb-2">
                 <BookOpen className="h-5 w-5 text-blue-600" />
                 <h3 className="text-lg font-medium">Your IITJ Story</h3>
@@ -467,7 +467,7 @@ const handleNext = () => {
           )}
 
           {step === 4 && (
-            <div className="space-y-6 min-w-[450px] min-h-[300px]">
+            <div className="space-y-6">
               <div className="bg-blue-50 p-4 rounded-lg">
                 <h3 className="font-medium text-blue-800 mb-2">Review Your Information</h3>
                 <p className="text-sm text-gray-700">
@@ -477,8 +477,8 @@ const handleNext = () => {
               </div>
               
               <div className="grid grid-cols-1 gap-4">
-                <div className="flex items-start gap-4">
-                  <div className="w-1/4">
+                <div className="flex flex-col md:flex-row items-start gap-4">
+                  <div className="w-full md:w-1/4">
                     <h4 className="font-medium text-gray-700">Photo</h4>
                     {formData.photoPreview ? (
                       <div className="relative w-20 h-20 rounded-full overflow-hidden mt-1">
@@ -492,60 +492,53 @@ const handleNext = () => {
                     ) : <p className="text-sm text-red-500">No photo uploaded</p>}
                   </div>
                   
-                  <div className="w-3/4">
+                  <div className="w-full md:w-3/4">
                     <h4 className="font-medium text-gray-700">Contact Information</h4>
                     <p className="text-sm text-gray-600 mt-1">Mobile: {formData.number || "Not provided"}</p>
                     <p className="text-sm text-gray-600 mt-1">LinkedIn: {formData.linkedinProfile || "Not provided"}</p>
                     
                     <h4 className="font-medium text-gray-700 mt-4">Jeevan Ka Funda</h4>
-                    <p className="text-sm text-gray-600 mt-1">{formData.jeevanKaFunda || "Not provided"}</p>
+                    <p className="text-sm text-gray-600 mt-1 break-words">{formData.jeevanKaFunda || "Not provided"}</p>
                     
                     <h4 className="font-medium text-gray-700 mt-4">For me IITJ is</h4>
-                    <p className="text-sm text-gray-600 mt-1">{formData.iitjIs || "Not provided"}</p>
+                    <p className="text-sm text-gray-600 mt-1 break-words">{formData.iitjIs || "Not provided"}</p>
                     
                     <h4 className="font-medium text-gray-700 mt-4">Life ka Crazy moment</h4>
-                    <p className="text-sm text-gray-600 mt-1">{formData.crazyMoment || "Not provided"}</p>
+                    <p className="text-sm text-gray-600 mt-1 break-words">{formData.crazyMoment || "Not provided"}</p>
                     
                     <h4 className="font-medium text-gray-700 mt-4">Title for my life at IITJ</h4>
-                    <p className="text-sm text-gray-600 mt-1">{formData.lifeTitle || "Not provided"}</p>
+                    <p className="text-sm text-gray-600 mt-1 break-words">{formData.lifeTitle || "Not provided"}</p>
                   </div>
                 </div>
               </div>
             </div>
           )}
 
-          <div className="flex justify-between mt-6">
-            {step > 1 ? (
-              <Button
-                type="button"
-                onClick={handleBack}
-                variant="outline"
-                className="border-blue-200 text-blue-600 hover:bg-blue-50"
-              >
-                <ChevronLeft className="mr-2 h-4 w-4" /> Back
-              </Button>
-            ) : (
-              <div></div>
-            )}
-
-            <Button 
-              onClick={handleNext} 
-              disabled={!isStepComplete()}
-              className="bg-blue-600 hover:bg-blue-700 text-white disabled:bg-blue-300"
-            >
-              {step === totalSteps ? (
-                <span className="flex items-center gap-2">
-                  Submit <Check className="ml-2 h-4 w-4" />
-                </span>
-              ) : (
-                <span className="flex items-center gap-2">
-                  Next <ChevronRight className="ml-2 h-4 w-4" />
-                </span>
-              )}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  )
-}
+                    <div className="flex justify-between mt-6">
+                      {step > 1 ? (
+                        <Button
+                          type="button"
+                          onClick={handleBack}
+                          variant="outline"
+                          className="border-blue-200 text-blue-600 hover:bg-blue-50"
+                        >
+                          <ChevronLeft className="mr-2 h-4 w-4" /> Back
+                        </Button>
+                      ) : (
+                        <div></div>
+                      )}
+                      
+                      <Button
+                        type="button"
+                        onClick={handleNext}
+                        disabled={!isStepComplete()}
+                        className="bg-blue-600 text-white hover:bg-blue-700"
+                      >
+                        {step === totalSteps ? "Submit" : "Next"} {step < totalSteps && <ChevronRight className="ml-2 h-4 w-4" />}
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            );
+          }
