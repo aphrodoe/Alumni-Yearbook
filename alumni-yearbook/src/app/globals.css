@@ -6,6 +6,17 @@ html, body {
   overscroll-behavior-y: none;
   overflow-x: hidden;
   height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+
+#__next, 
+.main-container {
+  margin: 0;
+  padding: 0;
+  width: 100%;
 }
 
 #progress-container {
@@ -22,11 +33,26 @@ html, body {
   -webkit-overflow-scrolling: touch;
   max-height: 100vh;
   padding-bottom: env(safe-area-inset-bottom, 20px);
+  left: 0;
+  right: 0;
+  width: 100%;
+  margin: 0;
 }
 
 .content-container {
   -webkit-overflow-scrolling: touch;
+  margin: 0;
+  padding-left: 0;
+  width: 100%;
 }
+
+* {
+  margin-left: 0;
+  padding-left: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+
 body.overflow-hidden {
   overflow: hidden;
   position: fixed;
@@ -38,8 +64,4 @@ body.overflow-hidden {
   .mobile-menu-container {
     padding-bottom: max(20px, env(safe-area-inset-bottom));
   }
-}
-
-* {
-  -webkit-tap-highlight-color: transparent;
 }

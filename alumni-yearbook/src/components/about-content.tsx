@@ -26,7 +26,7 @@ export default function AboutContent() {
         "The feed is a space where you can reflect on the little moments that make up life at IIT Jodhpur — through simple, relatable polls. From midnight mess runs to the struggle of 8 a.m. lectures, it’s a place to capture what it feels like to be here, right now. One day, you might look back and smile at these small, shared memories.",
     },
     {
-      question: "Where can i add my photos for the yearbook?",
+      question: "Where can I add my photos for the yearbook?",
       answer:
         "You can add your photos in the 'Upload memories' section of the portal. You can upload your candid photos, batch photoshoot images, and any other memorable moments you want to include in the yearbook.",
     },
@@ -43,7 +43,7 @@ export default function AboutContent() {
   ];
 
   return (
-    <div className="relative min-h-screen">
+    <div className="relative min-h-screen ">
       {/* Background Image Container */}
       <div
         className="fixed top-0 left-0 w-full h-full z-0"
@@ -57,7 +57,7 @@ export default function AboutContent() {
       />
 
       {/* Content Container */}
-      <div className="relative z-10">
+      <div className="relative z-100">
         <div className="max-w-6xl mx-auto p-6 space-y-8 rounded-lg">
           {/* Logo Section */}
           <div className="flex justify-between items-center">
@@ -75,8 +75,8 @@ export default function AboutContent() {
               />
             </a>
 
-            <h1 className="text-3xl sm:text-6xl font-bold text-blue-900">
-              YEARBOOK 2025
+            <h1 className="text-3xl sm:text-6xl font-bold text-blue-900 text-center">
+            YEARBOOK 2025
             </h1>
 
             <a
