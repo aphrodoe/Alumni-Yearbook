@@ -112,7 +112,7 @@ export function AppSidebar({ children, onNavChange, activeContent }: AppSidebarP
         <div className="flex justify-between items-center">
           <h1 className="text-xl font-bold text-blue-600">
             <span className={`${cursiveFont.className} text-3xl`}>One Last Dance</span>
-            <span className="text-xl">: Yearbook</span>
+            <span className="text-xl">&nbsp;: Yearbook</span>
           </h1>
           <Button
             variant="ghost"
