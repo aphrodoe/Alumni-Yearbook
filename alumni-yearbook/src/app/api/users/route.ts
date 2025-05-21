@@ -32,6 +32,9 @@ export async function GET(request: Request) {
       };
     }
     
+    // First get the total count for better pagination
+    const totalCount = await User.countDocuments(query);
+    
     const users = await User.find(query)
       .select('email name')
       .skip(skip)
@@ -45,10 +48,16 @@ export async function GET(request: Request) {
     return NextResponse.json({
       users: usersToReturn,
       hasMore,
-      currentPage: page
+      currentPage: page,
+      totalCount
     });
   } catch (error) {
     console.error('Error fetching users:', error);
-    return NextResponse.json({ error: 'Failed to fetch users' }, { status: 500 });
+    return NextResponse.json({ 
+      error: 'Failed to fetch users',
+      users: [],
+      hasMore: false,
+      currentPage: 1
+    }, { status: 200 }); // Return 200 with empty data on error
   }
 }

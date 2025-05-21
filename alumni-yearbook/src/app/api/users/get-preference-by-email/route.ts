@@ -5,7 +5,6 @@ import connectToDatabase from "@/lib/mongodb";
 import UserPreference from "@/app/models/UserPreference";
 
 export async function GET(request: Request) {
-
   const { searchParams } = new URL(request.url);
   const email = searchParams.get('email');
 
@@ -26,7 +25,13 @@ export async function GET(request: Request) {
     });
 
     if (!userPreference) {
-      return NextResponse.json({ message: "User preferences not found" }, { status: 404 });
+      // Return a 200 with default values instead of 404
+      return NextResponse.json({
+        preferences: {
+          photoUrl: `/placeholder.jpg?height=200&width=200`,
+          number: ""
+        }
+      });
     }
 
     return NextResponse.json({
@@ -38,8 +43,13 @@ export async function GET(request: Request) {
   } catch (error) {
     console.error("Error fetching user preferences:", error);
     return NextResponse.json(
-      { message: "Error fetching user preferences", error: (error as Error).message },
-      { status: 500 }
+      { 
+        preferences: {
+          photoUrl: `/placeholder.jpg?height=200&width=200`,
+          number: ""
+        }
+      },
+      { status: 200 } // Return 200 even on error with default values
     );
   }
 }

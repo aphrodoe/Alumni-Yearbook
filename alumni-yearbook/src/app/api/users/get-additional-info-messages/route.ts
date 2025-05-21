@@ -26,6 +26,7 @@ export async function GET(request: Request) {
 
     const additionalInfo = await UserAddInfo.findOne({ email });
 
+    // Always return 200 with data or empty defaults
     return NextResponse.json({
       success: true,
       additionalInfo: additionalInfo || {
@@ -37,9 +38,15 @@ export async function GET(request: Request) {
     });
   } catch (error) {
     console.error("Error fetching additional info:", error);
-    return NextResponse.json(
-      { message: "Error fetching additional info", error: (error as Error).message },
-      { status: 500 }
-    );
+    // Return default values on error with 200 status
+    return NextResponse.json({
+      success: true,
+      additionalInfo: {
+        jeevanKaFunda: "",
+        iitjIs: "",
+        crazyMoment: "",
+        lifeTitle: ""
+      }
+    });
   }
 }
