@@ -14,7 +14,6 @@ import FeedContent from "@/components/feed-content";
 import UpdateContent from "@/components/update-content";
 import ImageUploader from "@/components/image-uploader";
 import MessageBatchmates from "@/components/message-batchmates";
-import MessageJunior from "@/components/message-junior";
 import ContactForm from "@/components/contact-form";
 import MemoryViewer from "@/components/memory-viewer";
 import { TeamSection } from "@/components/team-section";
@@ -46,8 +45,6 @@ export default function Dashboard() {
         return <ImageUploader />;
       case "message_batchmate":
         return <MessageBatchmates />;
-      case "message_junior":
-        return <MessageJunior />;
       case "contact_us":
         return <ContactForm />;
       case "update":

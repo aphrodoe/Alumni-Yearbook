@@ -13,7 +13,7 @@ export default function AboutContent() {
     {
       question: "What is this portal about?",
       answer:
-        "This portal allows you to upload memories-photos to be featured in your yearbook. It also allows you to send heartfelt messages to your batchmates and juniors and interact using some fun polls.",
+        "This portal allows you to upload memories-photos to be featured in your yearbook. It also allows you to send heartfelt messages to your batchmates and interact using some fun polls.",
     },
     {
       question: "What will the yearbook 2025 contain?",
@@ -31,9 +31,9 @@ export default function AboutContent() {
         "You can add your photos in the 'Upload memories' section of the portal. You can upload your candid photos, batch photoshoot images, and any other memorable moments you want to include in the yearbook.",
     },
     {
-      question: "Can I message my batchmates and juniors?",
+      question: "Can I message my batchmates?",
       answer:
-        "Absolutely! You can send messages to your batchmates and juniors anytime. Your messages will be preserved and included in their yearbook, making them a lasting part of their graduation memories and adding an extra layer of meaning to their graduation celebrations. Whether it's a heartfelt note, words of encouragement, or a fun memory, your message will be a keepsake they'll treasure forever.",
+        "Absolutely! You can send messages to your batchmates anytime. Your messages will be preserved and included in their yearbook, making them a lasting part of their graduation memories and adding an extra layer of meaning to their graduation celebrations. Whether it's a heartfelt note, words of encouragement, or a fun memory, your message will be a keepsake they'll treasure forever.",
     },
     {
       question: "How will I receive my yearbook?",

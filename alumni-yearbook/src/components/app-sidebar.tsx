@@ -75,16 +75,7 @@ export function AppSidebar({ children, onNavChange, activeContent }: AppSidebarP
   const navItems = [
     { id: "about", label: "About", icon: Book },
     { id: "feed", label: "Feed", icon: Package },
-    {
-      id: "message",
-      label: "Message",
-      icon: MessageSquare,
-      dropdown: true,
-      items: [
-        { id: "message_batchmate", label: "Batchmates", icon: MessageSquare },
-        { id: "message_junior", label: "Juniors", icon: MessageSquare },
-      ],
-    },
+    { id: "message_batchmate", label: "Message Batchmates", icon: MessageSquare },
     {
       id: "add",
       label: "Upload memories",
@@ -135,30 +126,6 @@ export function AppSidebar({ children, onNavChange, activeContent }: AppSidebarP
           <div className="fixed inset-0 z-40 bg-white pt-16 pl-4 pr-2 overflow-y-auto mobile-menu-container">
             <div className="flex flex-col space-y-2 pb-20">
               {navItems.map((item) => {
-                if (item.dropdown) {
-                  return (
-                    <div key={item.id} className="space-y-2">
-                      <div className="flex items-center px-4 py-2 text-gray-500">
-                        <item.icon className="mr-2 h-5 w-5" />
-                        <span>{item.label}</span>
-                      </div>
-                      <div className="pl-8 space-y-2">
-                        {item.items?.map((subItem) => (
-                          <Button
-                            key={subItem.id}
-                            variant="ghost"
-                            className={`w-full justify-start ${activeContent === subItem.id ? "bg-blue-50 text-blue-600" : "text-gray-500"}`}
-                            onClick={() => handleNavItemClick(subItem.id)}
-                          >
-                            <subItem.icon className="mr-2 h-5 w-5" />
-                            {subItem.label}
-                          </Button>
-                        ))}
-                      </div>
-                    </div>
-                  )
-                }
-
                 return (
                   <Button
                     key={item.id}
@@ -202,34 +169,6 @@ export function AppSidebar({ children, onNavChange, activeContent }: AppSidebarP
               <SidebarContent className="py-4">
                 <SidebarMenu>
                   {navItems.map((item) => {
-                    if (item.dropdown) {
-                      return (
-                        <SidebarMenuItem key={item.id}>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <SidebarMenuButton className="w-full">
-                                <item.icon className="mr-2 h-5 w-5" />
-                                <span>{item.label}</span>
-                                <ChevronDown className="ml-auto h-4 w-4" />
-                              </SidebarMenuButton>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent className="w-56 bg-white border-blue-100">
-                              {item.items?.map((subItem) => (
-                                <DropdownMenuItem
-                                  key={subItem.id}
-                                  className="cursor-pointer hover:bg-blue-50"
-                                  onClick={() => handleNavItemClick(subItem.id)}
-                                >
-                                  <subItem.icon className="mr-2 h-4 w-4" />
-                                  <span>{subItem.label}</span>
-                                </DropdownMenuItem>
-                              ))}
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </SidebarMenuItem>
-                      )
-                    }
-
                     return (
                       <SidebarMenuItem key={item.id}>
                         <SidebarMenuButton
