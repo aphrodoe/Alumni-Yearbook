@@ -53,6 +53,7 @@ export default function ContactForm() {
       })
 
       if (response.ok) {
+        // Send email to first recipient
         await emailjs.send(
           process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID!,
           process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID_SUPPORT!, 
@@ -61,6 +62,19 @@ export default function ContactForm() {
             message: formData.message,
             subject: formData.subject,
             to_email: "b24cs1005@iitj.ac.in"
+          },
+          process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY!
+        )
+        
+        // Send the same email to second recipient
+        await emailjs.send(
+          process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID!,
+          process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID_SUPPORT!, 
+          {
+            from_name: userName || "A User",
+            message: formData.message,
+            subject: formData.subject,
+            to_email: "b24cs1027@iitj.ac.in"
           },
           process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY!
         )
