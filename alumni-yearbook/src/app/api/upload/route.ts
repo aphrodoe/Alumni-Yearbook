@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import { S3Client, PutObjectCommand, ObjectCannedACL } from '@aws-sdk/client-s3';
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import connectToDatabase from '../../../lib/mongodb';
 import Image from '../../models/Image';
 import { getServerSession } from "next-auth/next";
@@ -80,7 +79,7 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error('Error uploading images:', error);
     return NextResponse.json(
-      { message: 'Error uploading images', error: (error as Error).message }, 
+      { message: 'Error uploading images, try uploading the image with Title and Caption.', error: (error as Error).message }, 
       { status: 500 }
     );
   }
