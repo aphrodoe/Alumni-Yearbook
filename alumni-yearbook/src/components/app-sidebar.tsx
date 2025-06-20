@@ -84,6 +84,7 @@ export function AppSidebar({ children, onNavChange, activeContent }: AppSidebarP
     { id: "view", label: "View Uploaded Memories", icon: Eye },
     { id: "update", label: "Update Details", icon: User },
     { id: "contact_us", label: "Contact Us", icon: Mail },
+    { id: "pdf", label: "pdf", icon: Mail },
     {
       id: "team",
       label: "Meet The Team",

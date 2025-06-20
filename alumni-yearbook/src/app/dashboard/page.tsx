@@ -16,6 +16,7 @@ import ImageUploader from "@/components/image-uploader";
 import MessageBatchmates from "@/components/message-batchmates";
 import ContactForm from "@/components/contact-form";
 import MemoryViewer from "@/components/memory-viewer";
+import YearbookTester from "@/components/yearbook-tester";
 import { TeamSection } from "@/components/team-section";
 
 export default function Dashboard() {
@@ -57,6 +58,8 @@ export default function Dashboard() {
         return <MemoryViewer />;
       case "about":
         return <AboutContent />;
+      case "pdf":
+        return <YearbookTester />;
       default:
         return <AboutContent />;
     }
