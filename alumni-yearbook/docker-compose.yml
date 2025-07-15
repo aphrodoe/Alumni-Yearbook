@@ -1,8 +1,9 @@
-version: '3.8'
-
 services:
   app:
+    image: aphrodoe/yearbook-app
+    container_name: yearbook-app
     build: .
+    restart: unless-stopped
     ports:
       - "3000:3000"
     environment:
