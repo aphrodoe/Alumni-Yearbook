@@ -1,3 +1,4 @@
+import exp from "constants";
 import Image from "next/image";
 
 interface TeamMemberProps {
@@ -147,3 +148,5 @@ export function TeamSection() {
     </div>
   );
 }
+
+export default TeamSection;

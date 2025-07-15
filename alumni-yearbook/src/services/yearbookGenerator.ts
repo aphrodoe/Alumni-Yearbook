@@ -49,15 +49,16 @@ export class YearbookGenerator {
         this.pdfDoc = await PDFDocument.create();
         this.pdfDoc.registerFontkit(fontkit);
         
-        // Load custom fonts if available, otherwise use standard fonts
+        // Load Times New Roman font
         try {
-            const fontBytes = fs.readFileSync("assets/Airstream.ttf");
+            const fontBytes = fs.readFileSync("assets/Times New Roman.ttf");
             this.font = await this.pdfDoc.embedFont(fontBytes);
+            this.boldFont = await this.pdfDoc.embedFont(fontBytes); // Use same font for bold
         } catch {
-            this.font = await this.pdfDoc.embedFont(StandardFonts.Helvetica);
+            // Fallback to standard Times fonts
+            this.font = await this.pdfDoc.embedFont(StandardFonts.TimesRoman);
+            this.boldFont = await this.pdfDoc.embedFont(StandardFonts.TimesRomanBold);
         }
-        
-        this.boldFont = await this.pdfDoc.embedFont(StandardFonts.HelveticaBold);
     }
 
     async generatePersonalizedYearbook(email: string): Promise<string> {
@@ -202,7 +203,7 @@ export class YearbookGenerator {
                 const currentPage = this.getCurrentPage();
 
                 const senderName = msg.isSent ? userName : chat.otherUserName;
-                const bubbleColor = msg.isSent ? rgb(0.2, 0.6, 0.9) : rgb(0.9, 0.9, 0.9);
+                const bubbleColor = msg.isSent ? rgb(0.525, 0.447, 0.584) : rgb(0.9, 0.9, 0.9);
                 const textColor = msg.isSent ? rgb(1, 1, 1) : rgb(0, 0, 0);
 
                 // Bubble dimensions
@@ -298,66 +299,53 @@ export class YearbookGenerator {
         const page = this.getCurrentPage();
         const title = "My Memories";
         
-        // Use a better font and size
+        // Make it more prominent and centered
+        const fontSize = 48; // Increased size for prominence
+        const titleWidth = title.length * (fontSize * 0.6); // Approximate width calculation
+        const x = (this.pageWidth - titleWidth) / 2; // Center horizontally
+        const y = (this.pageHeight) / 2; // Center vertically on page
+        
+        // Draw the text without shadow - just the purple text
         page.drawText(title, {
-            x: this.margin + 2,
-            y: this.currentY - 2,
-            size: 36,  // Increased size
+            x: x,
+            y: y,
+            size: fontSize,
             font: this.boldFont,
-            color: rgb(0, 0, 0) // Shadow
+            color: rgb(0.525, 0.447, 0.584) // Purple color #867295
         });
         
-        page.drawText(title, {
-            x: this.margin,
-            y: this.currentY,
-            size: 36,  // Increased size
-            font: this.boldFont,
-            color: rgb(0.1, 0.3, 0.7) // A nicer blue color
-        });
-        
-        this.currentY -= 60;  // More spacing
+        // Set current Y to below the centered title
+        this.currentY = y - 100; // More space below the prominent title
     }
+
 
     private addSectionTitle(title: string) {
         const page = this.getCurrentPage();
         
-        // Calculate appropriate font size based on title length
-        let fontSize = 28;
-        const maxWidth = this.pageWidth - (2 * this.margin);
-        const estimatedWidth = title.length * (fontSize * 0.6); // Rough estimation
+        // Use smaller font size for long titles
+        const fontSize = title.length > 30 ? 20 : 24;
         
-        if (estimatedWidth > maxWidth) {
-            fontSize = Math.max(16, Math.floor(maxWidth / (title.length * 0.6)));
-        }
-        
-        // Wrap text if still too long
-        const wrappedTitle = this.wrapText(title, Math.floor(maxWidth / (fontSize * 0.5)));
+        // Wrap long titles
+        const maxCharsPerLine = Math.floor((this.pageWidth - 2 * this.margin) / (fontSize * 0.5));
+        const wrappedTitle = this.wrapText(title, maxCharsPerLine);
         const lines = wrappedTitle.split('\n');
         
         let currentY = this.currentY;
         
-        lines.forEach((line, index) => {
-            // Add text shadow for better visibility
-            page.drawText(line, {
-                x: this.margin + 2,
-                y: currentY - 2,
-                size: fontSize,
-                font: this.boldFont,
-                color: rgb(0, 0, 0) // Shadow
-            });
-            
+        lines.forEach(line => {
+            // Draw text without shadow - just the purple text
             page.drawText(line, {
                 x: this.margin,
                 y: currentY,
                 size: fontSize,
                 font: this.boldFont,
-                color: rgb(1, 1, 1) // White text
+                color: rgb(0.525, 0.447, 0.584) // Purple color #867295
             });
             
-            currentY -= (fontSize + 5); // Move down for next line
+            currentY -= (fontSize + 8);
         });
         
-        this.currentY = currentY - 20; // Extra spacing after title
+        this.currentY = currentY - 10;
     }
 
     private async addMemorySection(memory: Memory) {
@@ -387,7 +375,7 @@ export class YearbookGenerator {
                 height: titleHeight,
             });
             
-            // Memory title text
+            // Memory title text with purple color
             const titleTextX = titleX + (titleWidth / 2);
             const titleTextY = this.currentY - (titleHeight / 2);
             
@@ -396,7 +384,7 @@ export class YearbookGenerator {
                 y: titleTextY,
                 size: 28,
                 font: this.boldFont,
-                color: rgb(0.2, 0.4, 0.8)
+                color: rgb(0.525, 0.447, 0.584) // Purple color #867295
             });
             
             this.currentY -= (titleHeight + 40);
@@ -582,7 +570,7 @@ export class YearbookGenerator {
                 console.log(`Incomplete row adjusted, Y: ${this.currentY}`);
             }
             
-            // 4. Add caption
+            // 4. Add caption with purple color
             if (memory.images.length > 0) {
                 this.currentY -= 30;
                 await this.checkPageSpace(100);
@@ -606,13 +594,13 @@ export class YearbookGenerator {
                     borderWidth: 2
                 });
                 
-                // Add caption text
+                // Add caption text with purple color
                 currentPage.drawText("Caption", {
                     x: captionBoxX + 20,
                     y: this.currentY - 25,
                     size: 16,
                     font: this.boldFont,
-                    color: rgb(0.2, 0.4, 0.8)
+                    color: rgb(0.525, 0.447, 0.584) // Purple color #867295
                 });
                 
                 const caption = memory.images[0].caption;

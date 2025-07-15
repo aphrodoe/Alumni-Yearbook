@@ -17,7 +17,9 @@ import MessageBatchmates from "@/components/message-batchmates";
 import ContactForm from "@/components/contact-form";
 import MemoryViewer from "@/components/memory-viewer";
 import YearbookTester from "@/components/yearbook-tester";
-import { TeamSection } from "@/components/team-section";
+import TeamSection from "@/components/team-section";
+import YearbookViewer from "@/components/yearbook-viewer";
+
 
 export default function Dashboard() {
   const { data: session, status } = useSession();
@@ -59,7 +61,7 @@ export default function Dashboard() {
       case "about":
         return <AboutContent />;
       case "pdf":
-        return <YearbookTester />;
+        return <YearbookViewer />;
       default:
         return <AboutContent />;
     }
