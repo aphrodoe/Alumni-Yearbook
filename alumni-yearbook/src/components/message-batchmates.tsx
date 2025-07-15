@@ -1,12 +1,12 @@
 "use client"
 
-import React, { useEffect, useState } from "react"
+import React, { useEffect, useState, useCallback, useRef } from "react"
 import { useSession } from "next-auth/react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { toast as sonnerToast } from "sonner"
 import { Toaster } from "@/components/ui/sonner"
-import { Send, Search, ArrowLeft, MessageSquare, Loader2 } from "lucide-react"
+import { Send, Search, ArrowLeft, MessageSquare, Loader2, ChevronUp } from "lucide-react"
 import {
   Dialog,
   DialogContent,
@@ -39,6 +39,40 @@ type Message = {
   timestamp: Date
 }
 
+const scrollbarStyles = `
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #b0b0b0;
+    border-radius: 10px;
+    border: 2px solid #f1f1f1;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #888;
+  }
+  
+  .scroll-to-top {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 50;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+  }
+  
+  .scroll-to-top.visible {
+    opacity: 1;
+    visibility: visible;
+  }
+`;
+
 export default function MessageBatchmates() {
   const { data: session } = useSession()
   const [users, setUsers] = useState<User[]>([])
@@ -52,6 +86,8 @@ export default function MessageBatchmates() {
   const [showUserList, setShowUserList] = useState(true)
   const [isMessageDialogOpen, setIsMessageDialogOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
+  const [showScrollTop, setShowScrollTop] = useState(false);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // Responsive
   useEffect(() => {
@@ -66,11 +102,13 @@ export default function MessageBatchmates() {
     if (!session) return
     setIsLoading(true)
 
-    fetch(`/api/users?limit=10000`)
+    // Add sort parameter to API request
+    fetch(`/api/users?limit=10000&sort=name`)
       .then(res => res.json())
       .then(data => {
         let baseUsers: User[] = data.users.filter((u: User) => u.email !== session.user?.email)
-        // Set users with placeholders
+        
+        // Set users with placeholders (already sorted from API)
         setUsers(
           baseUsers.map(user => ({
             ...user,
@@ -81,29 +119,47 @@ export default function MessageBatchmates() {
         setIsLoading(false)
 
         // Progressive enhancement: fetch details in batches using the batch endpoint
+        // but maintain alphabetical order when updating
         const batchSize = 20
         const fetchDetails = async () => {
           for (let i = 0; i < baseUsers.length; i += batchSize) {
             const batch = baseUsers.slice(i, i + batchSize)
-            const res = await fetch("/api/users/batch-details", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ emails: batch.map(u => u.email) }),
-            })
-            const { users: details } = await res.json()
-            setUsers(prev =>
-              prev.map(u => {
-                const detail: User | undefined = details.find((d: User) => d.email === u.email)
-                return detail
-                  ? { ...u, profilePicture: detail.profilePicture, additionalInfo: detail.additionalInfo }
-                  : u
+            try {
+              const res = await fetch("/api/users/batch-details", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ emails: batch.map(u => u.email) }),
               })
-            )
+              const { users: details } = await res.json()
+              
+              // Update users while preserving order
+              setUsers(prev => {
+                const updated = [...prev]
+                details.forEach((detail: User) => {
+                  const index = updated.findIndex(u => u.email === detail.email)
+                  if (index !== -1) {
+                    updated[index] = {
+                      ...updated[index],
+                      profilePicture: detail.profilePicture,
+                      additionalInfo: detail.additionalInfo
+                    }
+                  }
+                })
+                return updated
+              })
+            } catch (error) {
+              console.error("Error fetching batch details:", error)
+            }
+            
+            // Add a small delay between batches to prevent UI freezing
+            await new Promise(resolve => setTimeout(resolve, 50))
           }
         }
+        
         fetchDetails()
       })
       .catch(err => {
+        console.error("Error fetching users:", err)
         sonnerToast.error("Failed to load users")
         setIsLoading(false)
       })
@@ -112,14 +168,14 @@ export default function MessageBatchmates() {
   // Search/filter users client-side
   useEffect(() => {
     if (!searchTerm) {
-      setFilteredUsers(users)
+      setFilteredUsers(users) // Already sorted from the API
     } else {
       const term = searchTerm.toLowerCase()
+      // Filter while maintaining alphabetical order (no need to sort again)
       setFilteredUsers(
         users.filter(
-          u =>
-            u.name.toLowerCase().includes(term) ||
-            u.email.toLowerCase().includes(term)
+          u => u.name.toLowerCase().includes(term) || 
+               u.email.toLowerCase().includes(term)
         )
       )
     }
@@ -140,6 +196,43 @@ export default function MessageBatchmates() {
       .then(data => setMessages(data.messages))
       .catch(() => {})
   }, [selectedUser, session])
+
+  // Add the scrollbar styles to the document
+  useEffect(() => {
+    const styleElement = document.createElement('style');
+    styleElement.innerHTML = scrollbarStyles;
+    document.head.appendChild(styleElement);
+
+    // Setup scroll listener for the scroll-to-top button
+    const handleScroll = () => {
+      if (scrollContainerRef.current) {
+        const scrollTop = scrollContainerRef.current.scrollTop;
+        setShowScrollTop(scrollTop > 300);
+      }
+    };
+
+    const scrollContainer = scrollContainerRef.current;
+    if (scrollContainer) {
+      scrollContainer.addEventListener('scroll', handleScroll);
+    }
+
+    return () => {
+      document.head.removeChild(styleElement);
+      if (scrollContainer) {
+        scrollContainer.removeEventListener('scroll', handleScroll);
+      }
+    };
+  }, []);
+
+  // Add this function to handle scrolling to top
+  const scrollToTop = useCallback(() => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    }
+  }, []);
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value)
@@ -285,7 +378,10 @@ export default function MessageBatchmates() {
         <div className="relative z-10 flex flex-col h-full w-full">
           <h2 className="text-2xl font-bold text-blue-600 mb-6 pt-4">A Final Adieu</h2>
           {showUserList ? (
-            <div className="flex-grow overflow-y-auto w-full">
+            <div 
+              className="flex-grow overflow-y-auto w-full custom-scrollbar" 
+              ref={scrollContainerRef}
+            >
               <div className="p-4 w-full space-y-4">
                 <div className="relative w-full">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
@@ -444,6 +540,15 @@ export default function MessageBatchmates() {
               </form>
             </DialogContent>
           </Dialog>
+          <button
+            onClick={scrollToTop}
+            className={`scroll-to-top rounded-full p-3 bg-blue-600 text-white shadow-lg ${
+              showScrollTop ? 'visible' : ''
+            }`}
+            aria-label="Scroll to top"
+          >
+            <ChevronUp size={24} />
+          </button>
         </div>
       </div>
     )
@@ -463,8 +568,14 @@ export default function MessageBatchmates() {
               onChange={handleSearch}
             />
           </div>
-          {renderUserCards()}
+          <div 
+            className="overflow-y-auto custom-scrollbar max-h-[calc(100vh-240px)]" 
+            ref={scrollContainerRef}
+          >
+            {renderUserCards()}
+          </div>
         </div>
+        
         <Dialog open={isMessageDialogOpen} onOpenChange={setIsMessageDialogOpen}>
           <DialogContent className="sm:max-w-xl md:max-w-2xl bg-white border border-gray-200 shadow-lg max-h-[80vh]">
             <DialogHeader>
@@ -539,6 +650,15 @@ export default function MessageBatchmates() {
             </form>
           </DialogContent>
         </Dialog>
+        <button
+          onClick={scrollToTop}
+          className={`scroll-to-top rounded-full p-3 bg-blue-600 text-white shadow-lg ${
+            showScrollTop ? 'visible' : ''
+          }`}
+          aria-label="Scroll to top"
+        >
+          <ChevronUp size={24} />
+        </button>
         <Toaster />
       </div>
     </div>

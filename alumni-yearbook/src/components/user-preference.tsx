@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { Upload, Quote, ChevronLeft, ChevronRight, Check, BookOpen, MessageSquare, Linkedin } from "lucide-react"; 
+import { Upload, Quote, ChevronLeft, ChevronRight, BookOpen, Linkedin } from "lucide-react"; 
 import { getSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -209,7 +209,7 @@ const handleNext = () => {
         })
           .then(async (response) => {
             if (response.ok) {
-              const responseData = await response.json();
+              await response.json();
               
               await fetch("/api/users/change-preference", {
                 method: "POST",
@@ -477,7 +477,7 @@ const handleNext = () => {
               <div className="bg-blue-50 p-4 rounded-lg">
                 <h3 className="font-medium text-blue-800 mb-2">Review Your Information</h3>
                 <p className="text-sm text-gray-700">
-                  Please review the information you've provided. Once submitted, this information will be 
+                  Please review the information you&apos;ve provided. Once submitted, this information will be 
                   used in your yearbook profile. It can be updated later if needed.
                 </p>
               </div>

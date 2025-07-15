@@ -18,6 +18,7 @@ export async function GET(request: Request) {
     const page = parseInt(url.searchParams.get('page') || '1');
     const limit = parseInt(url.searchParams.get('limit') || '20');
     const search = url.searchParams.get('search') || '';
+    const sort = url.searchParams.get('sort') || 'name'; 
     
     const skip = (page - 1) * limit;
     
@@ -35,8 +36,14 @@ export async function GET(request: Request) {
     // First get the total count for better pagination
     const totalCount = await User.countDocuments(query);
     
+    // Add sorting to the query
+    const sortDirection = 1; 
+    const sortOptions: any = {};
+    sortOptions[sort] = sortDirection;
+    
     const users = await User.find(query)
       .select('email name')
+      .sort(sortOptions)
       .skip(skip)
       .limit(limit + 1)
       .lean();
@@ -58,6 +65,6 @@ export async function GET(request: Request) {
       users: [],
       hasMore: false,
       currentPage: 1
-    }, { status: 200 }); // Return 200 with empty data on error
+    }, { status: 200 }); 
   }
 }
